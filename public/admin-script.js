@@ -190,7 +190,7 @@ function loadDocuments() {
                 <div class="documents-header">
                     <h2>Document Management</h2>
                     <button class="btn primary" id="createDocumentBtn">Create New Document</button>
-                </div>
+                    </div>
                 <div class="table-container">
                     <table class="table">
                         <thead>
@@ -214,7 +214,7 @@ function loadDocuments() {
                                         <button class="btn danger" data-document-id="${doc.id}" data-action="delete">Delete</button>
                                     </td>
                                 </tr>
-                            `).join('')}
+                `).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -479,6 +479,10 @@ function showCreateDocumentForm() {
                     <input type="text" id="type" name="type" required placeholder="e.g., privacy-policy, terms-of-service">
                 </div>
                 <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="Document title">
+                </div>
+                <div class="form-group">
                     <label for="content">Content (HTML)</label>
                     <textarea id="content" name="content" rows="10" required placeholder="Enter HTML content..."></textarea>
                 </div>
@@ -501,7 +505,8 @@ function showCreateDocumentForm() {
 function createDocument() {
     const token = localStorage.getItem('token');
     const type = document.getElementById('type').value;
-    const content = document.getElementById('content').value;
+    const title = document.getElementById('title').value;
+    const html_content = document.getElementById('content').value;
     
     fetch('/api/documents', {
         method: 'POST',
@@ -509,7 +514,7 @@ function createDocument() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ type, content })
+        body: JSON.stringify({ type, title, html_content })
     })
     .then(response => response.json())
     .then(data => {
@@ -546,11 +551,15 @@ function editDocument(id) {
                         <input type="hidden" id="id" name="id" value="${data.document.id}">
                         <div class="form-group">
                             <label for="type">Type</label>
-                            <input type="text" id="type" name="type" value="${data.document.type}" required>
+                            <input type="text" id="type" name="type" value="${data.document.type}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" id="title" name="title" value="${data.document.title}" required>
                         </div>
                         <div class="form-group">
                             <label for="content">Content (HTML)</label>
-                            <textarea id="content" name="content" rows="10" required>${data.document.content}</textarea>
+                            <textarea id="content" name="content" rows="10" required>${data.document.html_content}</textarea>
                         </div>
                         <div class="form-actions">
                             <button type="button" class="btn btn-back" onclick="loadDocuments()">Cancel</button>
@@ -576,29 +585,29 @@ function editDocument(id) {
 // Update document
 function updateDocument(id) {
     const token = localStorage.getItem('token');
-    const type = document.getElementById('type').value;
-    const content = document.getElementById('content').value;
+    const title = document.getElementById('title').value;
+    const html_content = document.getElementById('content').value;
     
-    fetch(`/api/documents/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
+                fetch(`/api/documents/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ type, content })
-    })
-    .then(response => response.json())
-    .then(data => {
+                    },
+        body: JSON.stringify({ title, html_content })
+                })
+                .then(response => response.json())
+                .then(data => {
         if (data.message) {
-            alert('Document updated successfully!');
-            loadDocuments();
-        } else {
+                        alert('Document updated successfully!');
+                        loadDocuments();
+                    } else {
             alert('Error updating document: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error updating document:', error);
-        alert('Error updating document.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating document:', error);
+                    alert('Error updating document.');
     });
 }
 
@@ -1032,7 +1041,7 @@ function searchUserNotifications() {
     
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/';
+    window.location.href = '/';
         return;
     }
     

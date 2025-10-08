@@ -56,6 +56,22 @@ const getDocumentByType = async (type) => {
   }
 };
 
+const getDocumentById = async (id) => {
+  const query = `
+    SELECT * FROM documents 
+    WHERE id = $1
+  `;
+  
+  const values = [id];
+  
+  try {
+    const result = await db.query(query, values);
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 const getAllDocuments = async () => {
   const query = 'SELECT * FROM documents ORDER BY type, updated_at DESC';
   
@@ -103,6 +119,7 @@ module.exports = {
   createDocumentsTable,
   createDocument,
   getDocumentByType,
+  getDocumentById,
   getAllDocuments,
   updateDocument,
   deleteDocument
