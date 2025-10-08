@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (token && user) {
+        // User is logged in, redirect based on role
+        if (user.role === 'admin') {
+            window.location.href = '/admin.html';
+        } else {
+            showDashboard();
+        }
+        return;
+    }
+    
     // DOM Elements
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
@@ -23,7 +37,43 @@ document.addEventListener('DOMContentLoaded', function() {
     handleForgotPasswordFormSubmission();
     handleOTPVerificationFormSubmission();
     handleResetPasswordFormSubmission();
+    
+    // Load blog preview
+    loadBlogPreview();
 });
+
+// Load blog preview for home page
+function loadBlogPreview() {
+    fetch('/api/blogs')
+    .then(response => response.json())
+    .then(data => {
+        const blogPreview = document.getElementById('blog-preview');
+        if (data.blogs && data.blogs.length > 0) {
+            // Show only the latest 3 blogs
+            const latestBlogs = data.blogs.slice(0, 3);
+            blogPreview.innerHTML = latestBlogs.map(blog => `
+                <div class="blog-preview-item">
+                    <div class="blog-preview-image">
+                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}">
+                    </div>
+                    <div class="blog-preview-content">
+                        <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
+                        <p class="blog-preview-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            blogPreview.innerHTML = '<p>No blog posts available yet.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading blog preview:', error);
+        const blogPreview = document.getElementById('blog-preview');
+        if (blogPreview) {
+            blogPreview.innerHTML = '<p>Error loading blog posts.</p>';
+        }
+    });
+}
 
 // Show login form
 function showLoginForm() {
@@ -293,8 +343,13 @@ function handleLoginFormSubmission() {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
-                    // Redirect to dashboard
+                    // Check if user is admin and redirect accordingly
+                    if (data.user.role === 'admin') {
+                        window.location.href = '/admin.html';
+                    } else {
+                        // Redirect to regular user dashboard
                     showDashboard();
+                    }
                 } else {
                     alert('Login failed: ' + data.message);
                 }
@@ -410,7 +465,7 @@ function handleOTPVerificationFormSubmission() {
             .then(response => response.json())
             .then(data => {
                 if (data.redirect) {
-                    alert('Signup successful! Please login.');
+                    alert(`Signup successful! Your Device ID is: ${data.deviceId}\n\nPlease save this Device ID - you'll need it for your Android app.\n\nNow please login.`);
                     showLoginForm();
                 } else {
                     alert('OTP verification failed: ' + data.message);
@@ -513,23 +568,33 @@ function handleResetPasswordFormSubmission() {
 
 // Show dashboard
 function showDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
     const container = document.querySelector('.container');
     container.innerHTML = `
         <div class="dashboard-container">
             <div class="dashboard-header">
                 <h1>Dashboard</h1>
                 <div class="header-actions">
-                    <button class="btn secondary" onclick="refreshAll()">Refresh</button>
-                    <button class="logout-btn" onclick="logout()">Logout</button>
+                    <button class="btn secondary" id="refreshBtn">Refresh</button>
+                    <button class="logout-btn" id="userLogoutBtn">Logout</button>
                 </div>
             </div>
             
+            <div class="device-info">
+                <h3>Your Device ID</h3>
+                <div class="device-id-container">
+                    <input type="text" id="deviceIdDisplay" value="${user.deviceId}" readonly class="device-id-input">
+                    <button class="btn secondary" id="copyDeviceBtn">Copy</button>
+                </div>
+                <p class="device-instruction">Use this Device ID in your Android app to connect and start tracking notifications.</p>
+            </div>
+            
             <div class="tabs">
-                <div class="tab active" onclick="showTab('whatsapp')">WhatsApp</div>
-                <div class="tab" onclick="showTab('instagram')">Instagram</div>
-                <div class="tab" onclick="showTab('others')">Others</div>
-                <div class="tab" onclick="showTab('blog')">Blog</div>
-                <div class="tab" onclick="showTab('documents')">Documents</div>
+                <div class="tab active" data-tab="whatsapp">WhatsApp</div>
+                <div class="tab" data-tab="instagram">Instagram</div>
+                <div class="tab" data-tab="others">Others</div>
+                <div class="tab" data-tab="blog">Blog</div>
+                <div class="tab" data-tab="documents">Documents</div>
             </div>
             
             <div class="tab-content active" id="whatsapp-tab">
@@ -580,10 +645,28 @@ function showDashboard() {
     loadNotifications();
     loadBlogPosts();
     loadDocuments();
+    
+    // Add event listeners for tabs
+    setupTabEventListeners();
+    setupUserLogoutButton();
+    setupRefreshButton();
+    setupCopyDeviceButton();
+}
+
+// Setup tab event listeners
+function setupTabEventListeners() {
+    const tabs = document.querySelectorAll('.tab');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            showTab(tabName, this);
+        });
+    });
 }
 
 // Show tab
-function showTab(tabName) {
+function showTab(tabName, clickedElement = null) {
     // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
@@ -597,10 +680,17 @@ function showTab(tabName) {
     });
     
     // Show selected tab content
-    document.getElementById(tabName + '-tab').classList.add('active');
+    const targetTabContent = document.getElementById(tabName + '-tab');
+    if (targetTabContent) {
+        targetTabContent.classList.add('active');
+    } else {
+        console.error('Tab content not found:', tabName + '-tab');
+    }
     
     // Add active class to clicked tab
-    event.target.classList.add('active');
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    }
     
     // Refresh notifications if switching to notification tabs
     if (['whatsapp', 'instagram', 'others'].includes(tabName)) {
@@ -730,13 +820,7 @@ function displayNotificationError() {
 
 // Load blog posts
 function loadBlogPosts() {
-    const token = localStorage.getItem('token');
-    
-    fetch('/api/blogs', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
+    fetch('/api/blogs')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -767,13 +851,7 @@ function loadBlogPosts() {
 
 // Load blog post
 function loadBlogPost(id) {
-    const token = localStorage.getItem('token');
-    
-    fetch(`/api/blogs/${id}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
+    fetch(`/api/blogs/${id}`)
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -804,13 +882,7 @@ function loadBlogPost(id) {
 
 // Load documents
 function loadDocuments() {
-    const token = localStorage.getItem('token');
-    
-    fetch('/api/documents', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
+    fetch('/api/documents')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -851,13 +923,7 @@ function loadDocuments() {
 
 // Load document
 function loadDocument(type) {
-    const token = localStorage.getItem('token');
-    
-    fetch(`/api/documents/${type}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
+    fetch(`/api/documents/${type}`)
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -912,12 +978,58 @@ function refreshAll() {
     loadDocuments();
 }
 
-// Logout
+// Setup user logout button
+function setupUserLogoutButton() {
+    const logoutBtn = document.getElementById('userLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            localStorage.clear();
+            window.location.href = '/';
+        });
+    }
+}
+
+// Setup refresh button
+function setupRefreshButton() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            refreshAll();
+        });
+    }
+}
+
+// Setup copy device ID button
+function setupCopyDeviceButton() {
+    const copyBtn = document.getElementById('copyDeviceBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            copyDeviceId();
+        });
+    }
+}
+
+// Logout function (for compatibility)
 function logout() {
-    // Remove token from localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.clear();
+    window.location.href = '/';
+}
+
+// Copy device ID to clipboard
+function copyDeviceId() {
+    const deviceIdInput = document.getElementById('deviceIdDisplay');
+    deviceIdInput.select();
+    deviceIdInput.setSelectionRange(0, 99999); // For mobile devices
     
-    // Show landing page
-    showLandingPage();
+    try {
+        document.execCommand('copy');
+        alert('Device ID copied to clipboard!');
+    } catch (err) {
+        // Fallback for modern browsers
+        navigator.clipboard.writeText(deviceIdInput.value).then(() => {
+            alert('Device ID copied to clipboard!');
+        }).catch(() => {
+            alert('Failed to copy. Please select and copy manually.');
+        });
+    }
 }

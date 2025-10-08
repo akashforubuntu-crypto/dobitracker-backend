@@ -1,0 +1,137 @@
+// Blog functionality for both blog listing and individual post pages
+
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname;
+    
+    if (currentPage === '/blog.html') {
+        loadBlogList();
+    } else if (currentPage === '/blog-post.html') {
+        loadBlogPost();
+    } else if (currentPage === '/') {
+        loadBlogPreview();
+    }
+});
+
+// Load blog preview for home page
+function loadBlogPreview() {
+    fetch('/api/blogs')
+    .then(response => response.json())
+    .then(data => {
+        const blogPreview = document.getElementById('blog-preview');
+        if (data.blogs && data.blogs.length > 0) {
+            // Show only the latest 3 blogs
+            const latestBlogs = data.blogs.slice(0, 3);
+            blogPreview.innerHTML = latestBlogs.map(blog => `
+                <div class="blog-preview-item">
+                    <div class="blog-preview-image">
+                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}">
+                    </div>
+                    <div class="blog-preview-content">
+                        <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
+                        <p class="blog-preview-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            blogPreview.innerHTML = '<p>No blog posts available yet.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading blog preview:', error);
+        document.getElementById('blog-preview').innerHTML = '<p>Error loading blog posts.</p>';
+    });
+}
+
+// Load blog list for blog page
+function loadBlogList() {
+    fetch('/api/blogs')
+    .then(response => response.json())
+    .then(data => {
+        const blogList = document.getElementById('blog-list');
+        if (data.blogs && data.blogs.length > 0) {
+            blogList.innerHTML = `
+                <div class="blog-grid">
+                    ${data.blogs.map(blog => `
+                        <article class="blog-card">
+                            <div class="blog-card-image">
+                                <img src="${blog.featured_image_url || 'https://via.placeholder.com/400x250'}" alt="${blog.title}">
+                            </div>
+                            <div class="blog-card-content">
+                                <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
+                                <p class="blog-card-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                                <p class="blog-card-excerpt">${getExcerpt(blog.html_content)}</p>
+                                <a href="/blog-post.html?id=${blog.id}" class="btn primary">Read More</a>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            blogList.innerHTML = '<p>No blog posts available yet.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading blog list:', error);
+        document.getElementById('blog-list').innerHTML = '<p>Error loading blog posts.</p>';
+    });
+}
+
+// Load individual blog post
+function loadBlogPost() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const blogId = urlParams.get('id');
+    
+    if (!blogId) {
+        document.getElementById('blog-post-content').innerHTML = '<p>Blog post not found.</p>';
+        return;
+    }
+    
+    fetch(`/api/blogs/${blogId}`)
+    .then(response => response.json())
+    .then(data => {
+        const blogPostContent = document.getElementById('blog-post-content');
+        if (data.blog) {
+            // Update page title
+            document.title = `${data.blog.title} - DobiTracker Blog`;
+            
+            blogPostContent.innerHTML = `
+                <header class="blog-post-header">
+                    <h1>${data.blog.title}</h1>
+                    <p class="blog-post-meta">
+                        Published on ${new Date(data.blog.created_at).toLocaleDateString()}
+                        ${data.blog.updated_at !== data.blog.created_at ? 
+                            ` • Updated on ${new Date(data.blog.updated_at).toLocaleDateString()}` : ''}
+                    </p>
+                </header>
+                
+                ${data.blog.featured_image_url ? `
+                    <div class="blog-post-featured-image">
+                        <img src="${data.blog.featured_image_url}" alt="${data.blog.title}">
+                    </div>
+                ` : ''}
+                
+                <div class="blog-post-body">
+                    ${data.blog.html_content}
+                </div>
+            `;
+        } else {
+            blogPostContent.innerHTML = '<p>Blog post not found.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading blog post:', error);
+        document.getElementById('blog-post-content').innerHTML = '<p>Error loading blog post.</p>';
+    });
+}
+
+// Helper function to get excerpt from HTML content
+function getExcerpt(htmlContent, maxLength = 150) {
+    // Remove HTML tags and get plain text
+    const textContent = htmlContent.replace(/<[^>]*>/g, '');
+    
+    if (textContent.length <= maxLength) {
+        return textContent;
+    }
+    
+    return textContent.substring(0, maxLength).trim() + '...';
+}

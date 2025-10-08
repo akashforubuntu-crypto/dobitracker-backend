@@ -10,19 +10,48 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>Admin Panel</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <button class="logout-btn" id="adminLogoutBtn">Logout</button>
         </div>
         
         <div class="admin-tabs">
-            <div class="admin-tab active" onclick="showAdminTab('users')">Manage Users</div>
-            <div class="admin-tab" onclick="showAdminTab('devices')">Device Status</div>
-            <div class="admin-tab" onclick="showAdminTab('documents')">Documents</div>
-            <div class="admin-tab" onclick="showAdminTab('notifications')">Notifications</div>
-            <div class="admin-tab" onclick="showAdminTab('blog')">Blog Management</div>
+            <div class="admin-tab active" data-tab="users">Manage Users</div>
+            <div class="admin-tab" data-tab="devices">Device Status</div>
+            <div class="admin-tab" data-tab="documents">Documents</div>
+            <div class="admin-tab" data-tab="notifications">Notifications</div>
+            <div class="admin-tab" data-tab="blog">Blog Management</div>
         </div>
         
         <div class="admin-tab-content active" id="users-tab">
-            <h2>Manage Users</h2>
+            <div class="users-header">
+                <h2>Manage Users</h2>
+                <div class="users-actions">
+                    <button class="btn primary create-user-btn">Create New User</button>
+                    <div class="search-container">
+                        <input type="text" id="userSearch" placeholder="Search users..." class="search-input">
+                        <button class="btn secondary" id="clearSearch">Clear</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <span id="totalUsers">-</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Admin Users</h3>
+                    <span id="adminUsers">-</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Regular Users</h3>
+                    <span id="regularUsers">-</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Users with Devices</h3>
+                    <span id="usersWithDevices">-</span>
+                </div>
+            </div>
+            
             <div class="table-container">
                 <table class="table">
                     <thead>
@@ -32,6 +61,7 @@
                             <th>Email</th>
                             <th>Role</th>
                             <th>Device ID</th>
+                            <th>Status</th>
                             <th>Created At</th>
                             <th>Actions</th>
                         </tr>
@@ -51,6 +81,8 @@
                         <tr>
                             <th>Device ID</th>
                             <th>User Name</th>
+                            <th>Online Status</th>
+                            <th>Last Heartbeat</th>
                             <th>Last Sync</th>
                             <th>Permission Status</th>
                         </tr>
@@ -78,7 +110,7 @@
         
         <div class="admin-tab-content" id="blog-tab">
             <h2>Blog Management</h2>
-            <button class="btn primary" onclick="showCreateBlogForm()">Create New Post</button>
+            <button class="btn primary" id="createBlogBtn">Create New Post</button>
             <div id="blog-management">
                 <!-- Blog management will be loaded here -->
             </div>
