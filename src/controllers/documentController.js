@@ -1,7 +1,7 @@
 const { 
   createDocument, 
   getDocumentByType, 
-  getDocumentById,
+  getDocumentById: getDocumentByIdFromModel,
   getAllDocuments, 
   updateDocument, 
   deleteDocument 
@@ -65,7 +65,7 @@ const getDocumentById = async (req, res) => {
     }
     
     // Get document by ID
-    const document = await getDocumentById(id);
+    const document = await getDocumentByIdFromModel(id);
     
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
