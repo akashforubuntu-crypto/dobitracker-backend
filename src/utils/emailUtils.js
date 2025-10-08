@@ -7,6 +7,8 @@ const validateEmailFormat = (email) => {
 
 const sendMojoAuthOTP = async (email) => {
   try {
+    console.log('Sending OTP to email:', email);
+    
     // Real MojoAuth API implementation using their REST API
     const response = await axios.post('https://api.mojoauth.com/users/emailotp', {
       email: email,
@@ -18,6 +20,8 @@ const sendMojoAuthOTP = async (email) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    console.log('MojoAuth OTP response:', response.data);
     
     return {
       success: true,
@@ -32,6 +36,8 @@ const sendMojoAuthOTP = async (email) => {
 
 const verifyMojoAuthOTP = async (stateId, otp) => {
   try {
+    console.log('Verifying OTP for state_id:', stateId);
+    
     // Real MojoAuth API implementation for verification
     const response = await axios.post('https://api.mojoauth.com/users/emailotp/verify', {
       state_id: stateId,
@@ -42,6 +48,8 @@ const verifyMojoAuthOTP = async (stateId, otp) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    console.log('MojoAuth OTP verification response:', response.data);
     
     return {
       success: true,
