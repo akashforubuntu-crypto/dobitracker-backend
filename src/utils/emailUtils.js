@@ -54,7 +54,7 @@ const verifyMojoAuthOTP = async (stateId, otp) => {
     return {
       success: true,
       message: 'OTP verified successfully',
-      verified: response.data.verified || false
+      verified: response.data.authenticated || false
     };
   } catch (error) {
     console.error('MojoAuth OTP verify error:', error.response?.data || error.message);
