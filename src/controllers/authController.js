@@ -50,11 +50,12 @@ const signup = async (req, res) => {
     // Generate a temporary signup token
     const signupToken = uuidv4();
     
-    // Store the signup token with user data (expires in 10 minutes)
+    // Store the signup token with user data and MojoAuth state (expires in 10 minutes)
     signupTokens.set(signupToken, {
       name,
       email,
       password,
+      mojoAuthStateId: otpResponse.state_id,
       expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
     });
     
@@ -94,8 +95,8 @@ const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: 'Signup token has expired' });
     }
     
-    // Verify OTP via MojoAuth
-    const otpResponse = await verifyMojoAuthOTP(signupData.email, otp);
+    // Verify OTP via MojoAuth using the stored state_id
+    const otpResponse = await verifyMojoAuthOTP(signupData.mojoAuthStateId, otp);
     
     if (!otpResponse.success || !otpResponse.verified) {
       return res.status(400).json({ message: 'Invalid OTP' });

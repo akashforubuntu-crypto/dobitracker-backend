@@ -5,9 +5,6 @@ const validateEmailFormat = (email) => {
   return emailRegex.test(email);
 };
 
-// In-memory storage for OTP state IDs (in production, use Redis or database)
-const otpStates = new Map();
-
 const sendMojoAuthOTP = async (email) => {
   try {
     // Real MojoAuth API implementation using their REST API
@@ -22,14 +19,6 @@ const sendMojoAuthOTP = async (email) => {
       }
     });
     
-    // Store the state_id for verification
-    if (response.data && response.data.state_id) {
-      otpStates.set(email, {
-        state_id: response.data.state_id,
-        expires_at: Date.now() + 10 * 60 * 1000 // 10 minutes
-      });
-    }
-    
     return {
       success: true,
       message: 'OTP sent successfully',
@@ -41,22 +30,11 @@ const sendMojoAuthOTP = async (email) => {
   }
 };
 
-const verifyMojoAuthOTP = async (email, otp) => {
+const verifyMojoAuthOTP = async (stateId, otp) => {
   try {
-    // Get the stored state_id for this email
-    const otpState = otpStates.get(email);
-    if (!otpState) {
-      throw new Error('No OTP session found for this email');
-    }
-    
-    if (Date.now() > otpState.expires_at) {
-      otpStates.delete(email);
-      throw new Error('OTP session has expired');
-    }
-    
     // Real MojoAuth API implementation for verification
     const response = await axios.post('https://api.mojoauth.com/users/emailotp/verify', {
-      state_id: otpState.state_id,
+      state_id: stateId,
       otp: otp
     }, {
       headers: {
@@ -64,9 +42,6 @@ const verifyMojoAuthOTP = async (email, otp) => {
         'Content-Type': 'application/json'
       }
     });
-    
-    // Clean up the stored state
-    otpStates.delete(email);
     
     return {
       success: true,
