@@ -652,8 +652,10 @@ function showDashboard() {
     // Add event listeners for tabs
     setupTabEventListeners();
     setupUserLogoutButton();
-    setupRefreshButton();
     setupCopyDeviceButton();
+    
+    // Setup event delegation for dynamically created buttons
+    setupDynamicButtonEventListeners();
 }
 
 // Setup tab event listeners
@@ -875,7 +877,7 @@ function loadBlogPost(id) {
                 <div class="blog-post-view">
                     <div class="blog-post-header">
                         <button class="btn secondary" id="back-to-blog-list">← Back to Blog List</button>
-                        <h1>${data.blog.title}</h1>
+                    <h1>${data.blog.title}</h1>
                         <p class="blog-post-meta">
                             Published on ${new Date(data.blog.created_at).toLocaleDateString()}
                             ${data.blog.updated_at !== data.blog.created_at ? 
@@ -896,8 +898,7 @@ function loadBlogPost(id) {
                 </div>
             `;
             
-            // Add event listeners for back buttons
-            setupBlogPostEventListeners();
+                    // Event listeners are handled by setupDynamicButtonEventListeners
             showTab('blog');
         } else {
             alert('Blog post not found.');
@@ -933,8 +934,8 @@ function loadDocuments() {
             // Display documents
             documentsContent.innerHTML = Object.keys(documentsByType).map(type => `
                 <div class="document-section">
-                    <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-                    ${documentsByType[type].map(doc => `
+                <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
+                ${documentsByType[type].map(doc => `
                         <div class="document-card" data-document-type="${doc.type}" style="cursor: pointer;">
                             <div class="document-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -955,8 +956,8 @@ function loadDocuments() {
                                     <polyline points="9,18 15,12 9,6"></polyline>
                                 </svg>
                             </div>
-                        </div>
-                    `).join('')}
+                    </div>
+                `).join('')}
                 </div>
             `).join('');
             
@@ -988,7 +989,7 @@ function loadDocument(type) {
                 <div class="document-view">
                     <div class="document-header">
                         <button class="btn secondary" id="back-to-documents-list">← Back to Documents</button>
-                        <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
+                    <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
                         <p class="document-meta">
                             Last updated: ${new Date(data.document.updated_at).toLocaleDateString()}
                         </p>
@@ -1002,8 +1003,7 @@ function loadDocument(type) {
                 </div>
             `;
             
-            // Add event listeners for back buttons
-            setupDocumentViewEventListeners();
+                    // Event listeners are handled by setupDynamicButtonEventListeners
             showTab('documents');
         } else {
             alert('Document not found.');
@@ -1053,15 +1053,6 @@ function setupUserLogoutButton() {
     }
 }
 
-// Setup refresh button
-function setupRefreshButton() {
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-            refreshAll();
-        });
-    }
-}
 
 // Setup copy device ID button
 function setupCopyDeviceButton() {
@@ -1128,16 +1119,6 @@ function setupBlogCardEventListeners() {
     });
 }
 
-// Setup blog post event listeners
-function setupBlogPostEventListeners() {
-    const backButtons = document.querySelectorAll('#back-to-blog-list, #back-to-blog-list-footer');
-    backButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            loadBlogPosts();
-            showTab('blog');
-        });
-    });
-}
 
 // Setup document card event listeners
 function setupDocumentCardEventListeners() {
@@ -1152,16 +1133,6 @@ function setupDocumentCardEventListeners() {
     });
 }
 
-// Setup document view event listeners
-function setupDocumentViewEventListeners() {
-    const backButtons = document.querySelectorAll('#back-to-documents-list, #back-to-documents-list-footer');
-    backButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            loadDocuments();
-            showTab('documents');
-        });
-    });
-}
 
 // Setup blog preview event listeners
 function setupBlogPreviewEventListeners() {
@@ -1173,5 +1144,31 @@ function setupBlogPreviewEventListeners() {
                 window.location.href = `/blog-post.html?id=${blogId}`;
             }
         });
+    });
+}
+
+// Setup event delegation for all dynamically created buttons
+function setupDynamicButtonEventListeners() {
+    // Use event delegation on the document body for all dynamic buttons
+    document.body.addEventListener('click', function(e) {
+        // Blog back buttons
+        if (e.target && (e.target.id === 'back-to-blog-list' || e.target.id === 'back-to-blog-list-footer')) {
+            console.log('Blog back button clicked');
+            loadBlogPosts();
+            showTab('blog');
+        }
+        
+        // Document back buttons
+        if (e.target && (e.target.id === 'back-to-documents-list' || e.target.id === 'back-to-documents-list-footer')) {
+            console.log('Document back button clicked');
+            loadDocuments();
+            showTab('documents');
+        }
+        
+        // Refresh button
+        if (e.target && e.target.id === 'refreshBtn') {
+            console.log('Refresh button clicked');
+            refreshAll();
+        }
     });
 }
