@@ -697,9 +697,13 @@ function showTab(tabName, clickedElement = null) {
         clickedElement.classList.add('active');
     }
     
-    // Refresh notifications if switching to notification tabs
+    // Refresh content based on tab type
     if (['whatsapp', 'instagram', 'others'].includes(tabName)) {
         loadNotifications();
+    } else if (tabName === 'blog') {
+        loadBlogPosts();
+    } else if (tabName === 'documents') {
+        loadDocuments();
     }
 }
 
