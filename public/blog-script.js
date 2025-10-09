@@ -24,7 +24,7 @@ function loadBlogPreview() {
             blogPreview.innerHTML = latestBlogs.map(blog => `
                 <div class="blog-preview-item">
                     <div class="blog-preview-image">
-                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}">
+                        <img src="${blog.featured_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='}" alt="${blog.title}">
                     </div>
                     <div class="blog-preview-content">
                         <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
@@ -54,7 +54,7 @@ function loadBlogList() {
                     ${data.blogs.map(blog => `
                         <article class="blog-card" data-blog-id="${blog.id || ''}">
                             <div class="blog-card-image">
-                                <img src="${blog.featured_image_url || 'https://via.placeholder.com/400x250'}" alt="${blog.title || 'Blog Post'}">
+                                <img src="${blog.featured_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='}" alt="${blog.title || 'Blog Post'}">
                             </div>
                             <div class="blog-card-content">
                                 <h3>${blog.title || 'Untitled'}</h3>

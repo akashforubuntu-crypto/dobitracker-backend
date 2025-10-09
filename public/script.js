@@ -54,7 +54,7 @@ function loadBlogPreview() {
             blogPreview.innerHTML = latestBlogs.map(blog => `
                 <div class="blog-preview-item" data-blog-id="${blog.id || ''}">
                     <div class="blog-preview-image">
-                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}">
+                        <img src="${blog.featured_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='}" alt="${blog.title || 'Blog Post'}">
                     </div>
                     <div class="blog-preview-content">
                         <h3>${blog.title || 'Untitled'}</h3>
@@ -778,7 +778,7 @@ function loadNotifications(page = 1, app = '') {
 // Display notifications with pagination
 function displayNotifications(notifications, pagination) {
     // Update current page and app
-    currentNotificationPage = pagination.currentPage;
+    currentNotificationPage = pagination ? pagination.currentPage : 1;
     
     // Get the active tab to determine which container to update
     const activeTab = document.querySelector('.tab.active');
@@ -823,8 +823,10 @@ function displayNotifications(notifications, pagination) {
             </div>
         `).join('');
         
-        // Add pagination controls
-        addPaginationControls(container, pagination, appName);
+        // Add pagination controls if pagination data is available
+        if (pagination) {
+            addPaginationControls(container, pagination, appName);
+        }
     } else {
         const displayName = appName === 'other' ? 'other' : (appName || 'all');
         container.innerHTML = `<p class="no-notifications">No ${displayName} notifications found.</p>`;
@@ -899,7 +901,7 @@ function loadBlogPosts() {
                 <div class="blog-list">
                     ${data.blogs.map(blog => `
                         <div class="blog-card" data-blog-id="${blog.id || ''}" style="cursor: pointer;">
-                            <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}" class="blog-image">
+                            <img src="${blog.featured_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='}" alt="${blog.title || 'Blog Post'}" class="blog-image">
                             <div class="blog-content">
                                 <h3 class="blog-title">${blog.title || 'Untitled'}</h3>
                                 <p class="blog-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
