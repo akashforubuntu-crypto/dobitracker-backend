@@ -998,8 +998,8 @@ function loadBlogPost(id) {
                 </div>
             `;
             
-                    // Event listeners are handled by setupDynamicButtonEventListeners
-            showTab('blog');
+            // Switch to blog tab without calling showTab (which would reload content)
+            switchToBlogTab(null);
         } else {
             alert('Blog post not found.');
         }
@@ -1117,8 +1117,8 @@ function loadDocument(type) {
                 </div>
             `;
             
-                    // Event listeners are handled by setupDynamicButtonEventListeners
-            showTab('documents');
+            // Switch to documents tab without calling showTab (which would reload content)
+            switchToDocumentsTab(null);
         } else {
             alert('Document not found.');
         }
