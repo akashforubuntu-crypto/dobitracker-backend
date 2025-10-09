@@ -831,11 +831,12 @@ function loadBlogPosts() {
         const blogList = document.querySelector('.blog-list');
         if (data.blogs && data.blogs.length > 0) {
             blogList.innerHTML = data.blogs.map(blog => `
-                <div class="blog-card" onclick="loadBlogPost(${blog.id})">
+                <div class="blog-card" onclick="loadBlogPost(${blog.id})" style="cursor: pointer;">
                     <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}" class="blog-image">
                     <div class="blog-content">
                         <h3 class="blog-title">${blog.title}</h3>
                         <p class="blog-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                        <p class="blog-excerpt">${getExcerpt(blog.html_content)}</p>
                     </div>
                 </div>
             `).join('');
@@ -862,11 +863,27 @@ function loadBlogPost(id) {
         if (data.blog) {
             const blogTab = document.getElementById('blog-tab');
             blogTab.innerHTML = `
-                <div class="blog-post">
-                    <h1>${data.blog.title}</h1>
-                    <img src="${data.blog.featured_image_url || 'https://via.placeholder.com/800x400'}" alt="${data.blog.title}">
-                    <div>${data.blog.html_content}</div>
-                    <button class="btn primary" onclick="showTab('blog')">Back to Blog List</button>
+                <div class="blog-post-view">
+                    <div class="blog-post-header">
+                        <button class="btn secondary" onclick="loadBlogPosts(); showTab('blog')">← Back to Blog List</button>
+                        <h1>${data.blog.title}</h1>
+                        <p class="blog-post-meta">
+                            Published on ${new Date(data.blog.created_at).toLocaleDateString()}
+                            ${data.blog.updated_at !== data.blog.created_at ? 
+                                ` • Updated on ${new Date(data.blog.updated_at).toLocaleDateString()}` : ''}
+                        </p>
+                    </div>
+                    ${data.blog.featured_image_url ? `
+                        <div class="blog-post-featured-image">
+                            <img src="${data.blog.featured_image_url}" alt="${data.blog.title}">
+                        </div>
+                    ` : ''}
+                    <div class="blog-post-content">
+                        ${data.blog.html_content}
+                    </div>
+                    <div class="blog-post-footer">
+                        <button class="btn primary" onclick="loadBlogPosts(); showTab('blog')">Back to Blog List</button>
+                    </div>
                 </div>
             `;
             showTab('blog');
@@ -903,13 +920,32 @@ function loadDocuments() {
             
             // Display documents
             documentsContent.innerHTML = Object.keys(documentsByType).map(type => `
-                <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-                ${documentsByType[type].map(doc => `
-                    <div onclick="loadDocument('${doc.type}')" style="cursor: pointer; margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px;">
-                        <h4>${doc.type}</h4>
-                        <p>Last updated: ${new Date(doc.updated_at).toLocaleDateString()}</p>
-                    </div>
-                `).join('')}
+                <div class="document-section">
+                    <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
+                    ${documentsByType[type].map(doc => `
+                        <div class="document-card" onclick="loadDocument('${doc.type}')" style="cursor: pointer;">
+                            <div class="document-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10,9 9,9 8,9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="document-info">
+                                <h4>${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}</h4>
+                                <p class="document-date">Last updated: ${new Date(doc.updated_at).toLocaleDateString()}</p>
+                                <p class="document-preview">Click to read the full document</p>
+                            </div>
+                            <div class="document-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9,18 15,12 9,6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
             `).join('');
         } else {
             documentsContent.innerHTML = '<p>No documents available.</p>';
@@ -934,10 +970,20 @@ function loadDocument(type) {
         if (data.document) {
             const documentsTab = document.getElementById('documents-tab');
             documentsTab.innerHTML = `
-                <div class="document-content">
-                    <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
-                    <div>${data.document.content}</div>
-                    <button class="btn primary" onclick="showTab('documents')">Back to Documents</button>
+                <div class="document-view">
+                    <div class="document-header">
+                        <button class="btn secondary" onclick="loadDocuments(); showTab('documents')">← Back to Documents</button>
+                        <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
+                        <p class="document-meta">
+                            Last updated: ${new Date(data.document.updated_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div class="document-content">
+                        ${data.document.content}
+                    </div>
+                    <div class="document-footer">
+                        <button class="btn primary" onclick="loadDocuments(); showTab('documents')">Back to Documents</button>
+                    </div>
                 </div>
             `;
             showTab('documents');
@@ -1032,4 +1078,16 @@ function copyDeviceId() {
             alert('Failed to copy. Please select and copy manually.');
         });
     }
+}
+
+// Helper function to get excerpt from HTML content
+function getExcerpt(htmlContent, maxLength = 150) {
+    // Remove HTML tags and get plain text
+    const textContent = htmlContent.replace(/<[^>]*>/g, '');
+    
+    if (textContent.length <= maxLength) {
+        return textContent;
+    }
+    
+    return textContent.substring(0, maxLength).trim() + '...';
 }

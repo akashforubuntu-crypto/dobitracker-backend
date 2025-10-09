@@ -575,6 +575,248 @@ footer {
     gap: 10px;
 }
 
+/* Blog card styles for user dashboard */
+.blog-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.blog-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.blog-content {
+    padding: 15px;
+}
+
+.blog-title {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.blog-date {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0 0 10px 0;
+}
+
+.blog-excerpt {
+    color: #555;
+    font-size: 0.95em;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Document card styles */
+.document-section {
+    margin-bottom: 30px;
+}
+
+.document-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.2s ease;
+}
+
+.document-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+    transform: translateX(5px);
+}
+
+.document-icon {
+    color: #007bff;
+    flex-shrink: 0;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-info h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.document-date {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0 0 5px 0;
+}
+
+.document-preview {
+    color: #888;
+    font-size: 0.85em;
+    margin: 0;
+}
+
+.document-arrow {
+    color: #ccc;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.document-card:hover .document-arrow {
+    color: #007bff;
+}
+
+/* Blog post view styles */
+.blog-post-view {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.blog-post-header {
+    margin-bottom: 30px;
+}
+
+.blog-post-header h1 {
+    color: #333;
+    margin: 20px 0 10px 0;
+    font-size: 2em;
+    line-height: 1.2;
+}
+
+.blog-post-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0 0 20px 0;
+}
+
+.blog-post-featured-image {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.blog-post-featured-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.blog-post-content {
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.blog-post-content h1,
+.blog-post-content h2,
+.blog-post-content h3,
+.blog-post-content h4,
+.blog-post-content h5,
+.blog-post-content h6 {
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.blog-post-content p {
+    margin-bottom: 15px;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+    margin-bottom: 15px;
+    padding-left: 30px;
+}
+
+.blog-post-content li {
+    margin-bottom: 5px;
+}
+
+.blog-post-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Document view styles */
+.document-view {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.document-header {
+    margin-bottom: 30px;
+}
+
+.document-header h1 {
+    color: #333;
+    margin: 20px 0 10px 0;
+    font-size: 2em;
+    line-height: 1.2;
+}
+
+.document-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0 0 20px 0;
+}
+
+.document-content {
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 30px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.document-content h1,
+.document-content h2,
+.document-content h3,
+.document-content h4,
+.document-content h5,
+.document-content h6 {
+    color: #333;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.document-content p {
+    margin-bottom: 15px;
+}
+
+.document-content ul,
+.document-content ol {
+    margin-bottom: 15px;
+    padding-left: 30px;
+}
+
+.document-content li {
+    margin-bottom: 5px;
+}
+
+.document-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
 .pagination button {
     padding: 8px 12px;
     border: 1px solid #ddd;
