@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load initial content
     loadUsers();
-    loadDevices();
     loadDocuments();
     loadBlogPosts();
     loadNotificationsManagement();
@@ -113,65 +112,6 @@ function loadUsers() {
     });
 }
 
-// Load devices
-function loadDevices() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/';
-        return;
-    }
-    
-    fetch('/api/admin/devices', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert('Session expired. Please login again.');
-                logout();
-                return;
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        const devicesTableBody = document.getElementById('devices-table-body');
-        if (data.devices && data.devices.length > 0) {
-            devicesTableBody.innerHTML = data.devices.map(device => {
-                const heartbeatText = device.last_heartbeat ? 
-                    `${new Date(device.last_heartbeat).toLocaleString()} (${device.heartbeat_minutes_ago}m ago)` : 
-                    'Never';
-                const notificationText = device.last_notification_sync ? 
-                    `${new Date(device.last_notification_sync).toLocaleString()} (${device.notification_minutes_ago}m ago)` : 
-                    'Never';
-                
-                return `
-                <tr>
-                    <td>${device.device_id}</td>
-                    <td>${device.user_name}</td>
-                    <td class="${device.is_online ? 'status-online' : 'status-offline'}">
-                        ${device.is_online ? '🟢 Online' : '🔴 Offline'}
-                    </td>
-                    <td>${heartbeatText}</td>
-                    <td>${notificationText}</td>
-                    <td class="${device.permission_status === 'Enabled' ? 'status-enabled' : 'status-disabled'}">
-                        ${device.permission_status}
-                    </td>
-                </tr>
-            `;
-            }).join('');
-        } else {
-            devicesTableBody.innerHTML = '<tr><td colspan="6">No devices found.</td></tr>';
-        }
-    })
-    .catch(error => {
-        console.error('Error loading devices:', error);
-        document.getElementById('devices-table-body').innerHTML = '<tr><td colspan="6">Error loading devices.</td></tr>';
-    });
-}
 
 // Load documents
 function loadDocuments() {

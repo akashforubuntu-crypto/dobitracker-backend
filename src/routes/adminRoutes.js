@@ -4,7 +4,6 @@ const {
   getAllUsersHandler,
   getUserById,
   updateUserHandler,
-  getDeviceStatus,
   getNotificationsForUser,
   deleteUserHandler,
   createUserHandler
@@ -17,7 +16,6 @@ router.post('/users', authenticate, authorizeAdmin, createUserHandler);
 router.get('/users/:id', authenticate, authorizeAdmin, getUserById);
 router.put('/users/:id', authenticate, authorizeAdmin, updateUserHandler);
 router.delete('/users/:id', authenticate, authorizeAdmin, deleteUserHandler);
-router.get('/devices', authenticate, authorizeAdmin, getDeviceStatus);
 router.get('/notifications/:deviceId', authenticate, authorizeAdmin, getNotificationsForUser);
 
 module.exports = router;

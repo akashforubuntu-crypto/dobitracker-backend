@@ -81,37 +81,6 @@ const updateUserHandler = async (req, res) => {
   }
 };
 
-const getDeviceStatus = async (req, res) => {
-  try {
-    // This would require a getDeviceStatus function in userModel
-    // For now, we'll simulate this:
-    console.log('Fetching device status - this would be implemented with a database query');
-    
-    // Simulated response
-    const devices = [
-      {
-        device_id: 'abc123',
-        user_name: 'John Doe',
-        last_sync: new Date(),
-        permission_status: 'Enabled'
-      },
-      {
-        device_id: 'def456',
-        user_name: 'Jane Smith',
-        last_sync: new Date(),
-        permission_status: 'Disabled'
-      }
-    ];
-    
-    res.status(200).json({
-      message: 'Device status fetched successfully',
-      devices: devices
-    });
-  } catch (error) {
-    console.error('Get device status error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
 
 const getNotificationsForUser = async (req, res) => {
   try {
@@ -192,7 +161,6 @@ module.exports = {
   getAllUsersHandler,
   getUserById,
   updateUserHandler,
-  getDeviceStatus,
   getNotificationsForUser,
   deleteUserHandler,
   createUserHandler
