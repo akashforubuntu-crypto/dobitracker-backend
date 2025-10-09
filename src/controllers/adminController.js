@@ -1,40 +1,18 @@
 const { 
   findUserById,
   findUserByEmail,
-  findUserByDeviceId
+  findUserByDeviceId,
+  getAllUsers: getAllUsersFromModel,
+  updateUser,
+  deleteUser,
+  createUser
 } = require('../models/userModel');
 const { getAllNotificationsByDeviceId } = require('../models/notificationModel');
 
-const getAllUsers = async (req, res) => {
+const getAllUsersHandler = async (req, res) => {
   try {
-    // This would require a getAllUsers function in userModel
-    // For now, we'll simulate this:
-    console.log('Fetching all users - this would be implemented with a database query');
-    
-    // Simulated response
-    const users = [
-      {
-        id: 1,
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'user',
-        device_id: 'abc123',
-        android_id: 'android123',
-        created_at: new Date(),
-        permission_status: true
-      },
-      {
-        id: 2,
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        role: 'user',
-        device_id: 'def456',
-        android_id: 'android456',
-        created_at: new Date(),
-        permission_status: false
-      }
-    ];
-    
+    console.log('Fetching all users from database...');
+    const users = await getAllUsersFromModel();
     res.status(200).json({
       message: 'Users fetched successfully',
       users: users
@@ -71,36 +49,34 @@ const getUserById = async (req, res) => {
   }
 };
 
-const updateUserRole = async (req, res) => {
+const updateUserHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { name, email, role } = req.body;
     
     // Validate input
     if (!id) {
       return res.status(400).json({ message: 'User ID is required' });
     }
     
-    if (!role) {
-      return res.status(400).json({ message: 'Role is required' });
+    if (!name || !email || !role) {
+      return res.status(400).json({ message: 'Name, email, and role are required' });
     }
     
-    // This would require an updateRole function in userModel
-    // For now, we'll simulate this:
-    console.log(`Updating user ${id} role to ${role} - this would be implemented with a database query`);
+    console.log(`Updating user ${id} with data:`, { name, email, role });
     
-    // Simulated response
-    const updatedUser = {
-      id: id,
-      role: role
-    };
+    const updatedUser = await updateUser(id, { name, email, role });
+    
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
     res.status(200).json({
-      message: 'User role updated successfully',
+      message: 'User updated successfully',
       user: updatedUser
     });
   } catch (error) {
-    console.error('Update user role error:', error);
+    console.error('Update user error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -159,7 +135,7 @@ const getNotificationsForUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUserHandler = async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -168,11 +144,14 @@ const deleteUser = async (req, res) => {
       return res.status(400).json({ message: 'User ID is required' });
     }
     
-    // This would require a deleteUser function in userModel
-    // For now, we'll simulate this:
-    console.log(`Deleting user ${id} - this would be implemented with a database query`);
+    console.log(`Deleting user ${id} from database...`);
     
-    // Simulated response
+    const deletedUser = await deleteUser(id);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.status(200).json({
       message: 'User deleted successfully'
     });
@@ -182,11 +161,39 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const createUserHandler = async (req, res) => {
+  try {
+    const { name, email, password, role = 'user' } = req.body;
+    
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    
+    console.log(`Creating new user:`, { name, email, role });
+    
+    const newUser = await createUser({ name, email, password, role });
+    
+    res.status(201).json({
+      message: 'User created successfully',
+      user: newUser
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    if (error.code === '23505') { // Unique constraint violation
+      res.status(400).json({ message: 'Email already exists' });
+    } else {
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+};
+
 module.exports = {
-  getAllUsers,
+  getAllUsersHandler,
   getUserById,
-  updateUserRole,
+  updateUserHandler,
   getDeviceStatus,
   getNotificationsForUser,
-  deleteUser
+  deleteUserHandler,
+  createUserHandler
 };
