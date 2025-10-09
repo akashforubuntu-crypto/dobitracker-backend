@@ -664,13 +664,81 @@ function setupTabEventListeners() {
     
     tabs.forEach(tab => {
         tab.addEventListener('click', function(e) {
-            // Only trigger if clicking on the tab itself, not its content
-            if (e.target === this || e.target.closest('.tab') === this) {
-                const tabName = this.getAttribute('data-tab');
-                showTab(tabName, this);
+            const tabName = this.getAttribute('data-tab');
+            
+            // For blog and documents tabs, don't use showTab - handle directly
+            if (tabName === 'blog') {
+                e.preventDefault();
+                e.stopPropagation();
+                // Just switch to blog tab without calling showTab
+                switchToBlogTab(this);
+                return;
             }
+            
+            if (tabName === 'documents') {
+                e.preventDefault();
+                e.stopPropagation();
+                // Just switch to documents tab without calling showTab
+                switchToDocumentsTab(this);
+                return;
+            }
+            
+            // For other tabs, use normal behavior
+            showTab(tabName, this);
         });
     });
+}
+
+// Switch to blog tab without loading content
+function switchToBlogTab(clickedElement) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show blog tab content
+    const blogTab = document.getElementById('blog-tab');
+    if (blogTab) {
+        blogTab.classList.add('active');
+    }
+    
+    // Add active class to clicked tab
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    }
+}
+
+// Switch to documents tab without loading content
+function switchToDocumentsTab(clickedElement) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show documents tab content
+    const documentsTab = document.getElementById('documents-tab');
+    if (documentsTab) {
+        documentsTab.classList.add('active');
+    }
+    
+    // Add active class to clicked tab
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    }
 }
 
 // Show tab
