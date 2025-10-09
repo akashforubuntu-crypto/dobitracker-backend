@@ -52,13 +52,13 @@ function loadBlogPreview() {
             // Show only the latest 3 blogs
             const latestBlogs = data.blogs.slice(0, 3);
             blogPreview.innerHTML = latestBlogs.map(blog => `
-                <div class="blog-preview-item" data-blog-id="${blog.id}">
+                <div class="blog-preview-item" data-blog-id="${blog.id || ''}">
                     <div class="blog-preview-image">
-                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}">
+                        <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}">
                     </div>
                     <div class="blog-preview-content">
-                        <h3>${blog.title}</h3>
-                        <p class="blog-preview-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                        <h3>${blog.title || 'Untitled'}</h3>
+                        <p class="blog-preview-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
                     </div>
                 </div>
             `).join('');
@@ -834,11 +834,11 @@ function loadBlogPosts() {
         const blogList = document.querySelector('.blog-list');
         if (data.blogs && data.blogs.length > 0) {
             blogList.innerHTML = data.blogs.map(blog => `
-                <div class="blog-card" data-blog-id="${blog.id}" style="cursor: pointer;">
-                    <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}" class="blog-image">
+                <div class="blog-card" data-blog-id="${blog.id || ''}" style="cursor: pointer;">
+                    <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}" class="blog-image">
                     <div class="blog-content">
-                        <h3 class="blog-title">${blog.title}</h3>
-                        <p class="blog-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                        <h3 class="blog-title">${blog.title || 'Untitled'}</h3>
+                        <p class="blog-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
                         <p class="blog-excerpt">${getExcerpt(blog.html_content)}</p>
                     </div>
                 </div>
@@ -852,7 +852,10 @@ function loadBlogPosts() {
     })
     .catch(error => {
         console.error('Error loading blog posts:', error);
-        document.querySelector('.blog-list').innerHTML = '<p class="error-message">Error loading blog posts. Please try again later.</p>';
+        const blogList = document.querySelector('.blog-list');
+        if (blogList) {
+            blogList.innerHTML = '<p class="error-message">Error loading blog posts. Please try again later.</p>';
+        }
     });
 }
 
@@ -1097,6 +1100,11 @@ function copyDeviceId() {
 
 // Helper function to get excerpt from HTML content
 function getExcerpt(htmlContent, maxLength = 150) {
+    // Check if htmlContent exists and is a string
+    if (!htmlContent || typeof htmlContent !== 'string') {
+        return 'No content available';
+    }
+    
     // Remove HTML tags and get plain text
     const textContent = htmlContent.replace(/<[^>]*>/g, '');
     

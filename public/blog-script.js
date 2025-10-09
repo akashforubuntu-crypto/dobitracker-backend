@@ -52,15 +52,15 @@ function loadBlogList() {
             blogList.innerHTML = `
                 <div class="blog-grid">
                     ${data.blogs.map(blog => `
-                        <article class="blog-card" data-blog-id="${blog.id}">
+                        <article class="blog-card" data-blog-id="${blog.id || ''}">
                             <div class="blog-card-image">
-                                <img src="${blog.featured_image_url || 'https://via.placeholder.com/400x250'}" alt="${blog.title}">
+                                <img src="${blog.featured_image_url || 'https://via.placeholder.com/400x250'}" alt="${blog.title || 'Blog Post'}">
                             </div>
                             <div class="blog-card-content">
-                                <h3>${blog.title}</h3>
-                                <p class="blog-card-date">${new Date(blog.created_at).toLocaleDateString()}</p>
+                                <h3>${blog.title || 'Untitled'}</h3>
+                                <p class="blog-card-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
                                 <p class="blog-card-excerpt">${getExcerpt(blog.html_content)}</p>
-                                <button class="btn primary blog-read-more" data-blog-id="${blog.id}">Read More</button>
+                                <button class="btn primary blog-read-more" data-blog-id="${blog.id || ''}">Read More</button>
                             </div>
                         </article>
                     `).join('')}
@@ -129,6 +129,11 @@ function loadBlogPost() {
 
 // Helper function to get excerpt from HTML content
 function getExcerpt(htmlContent, maxLength = 150) {
+    // Check if htmlContent exists and is a string
+    if (!htmlContent || typeof htmlContent !== 'string') {
+        return 'No content available';
+    }
+    
     // Remove HTML tags and get plain text
     const textContent = htmlContent.replace(/<[^>]*>/g, '');
     
