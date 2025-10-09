@@ -645,7 +645,7 @@ function showDashboard() {
     `;
     
     // Load initial content
-    loadNotifications();
+    loadNotifications(1, ''); // Load all notifications initially
     loadBlogPosts();
     loadDocuments();
     
@@ -713,7 +713,9 @@ function showTab(tabName, clickedElement = null) {
     
     // Always refresh content when tab is clicked
     if (['whatsapp', 'instagram', 'others'].includes(tabName)) {
-        loadNotifications();
+        // Load notifications for the specific app
+        const appName = tabName === 'others' ? 'other' : tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        loadNotifications(1, appName);
     } else if (tabName === 'blog') {
         // Always fetch and display blog posts
         loadBlogPosts();
@@ -724,7 +726,12 @@ function showTab(tabName, clickedElement = null) {
 }
 
 // Load notifications
-function loadNotifications() {
+// Pagination variables for user notifications
+let currentNotificationPage = 1;
+let currentNotificationApp = '';
+const notificationLimit = 25;
+
+function loadNotifications(page = 1, app = '') {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user || !user.deviceId) {
         console.error('User or device ID not found');
@@ -737,8 +744,14 @@ function loadNotifications() {
         return;
     }
 
-    // Fetch all notifications for the user's device
-    fetch(`/api/notifications/fetch-notifications?device_id=${user.deviceId}`, {
+    // Build query parameters
+    let queryParams = `device_id=${user.deviceId}&page=${page}&limit=${notificationLimit}`;
+    if (app) {
+        queryParams += `&app=${app}`;
+    }
+
+    // Fetch notifications with pagination
+    fetch(`/api/notifications/fetch-notifications?${queryParams}`, {
         headers: {
             'Authorization': 'Bearer ' + token
         }
@@ -751,7 +764,7 @@ function loadNotifications() {
     })
     .then(data => {
         if (data.notifications && data.notifications.length > 0) {
-            displayNotifications(data.notifications);
+            displayNotifications(data.notifications, data.pagination);
         } else {
             displayNoNotifications();
         }
@@ -762,63 +775,82 @@ function loadNotifications() {
     });
 }
 
-// Display notifications in appropriate tabs
-function displayNotifications(notifications) {
-    // Group notifications by app
-    const whatsappNotifications = notifications.filter(n => n.app_name === 'WhatsApp');
-    const instagramNotifications = notifications.filter(n => n.app_name === 'Instagram');
-    const otherNotifications = notifications.filter(n => 
-        n.app_name !== 'WhatsApp' && n.app_name !== 'Instagram'
-    );
-
-    // Display WhatsApp notifications
-    const whatsappContainer = document.getElementById('whatsapp-notifications');
-    if (whatsappNotifications.length > 0) {
-        whatsappContainer.innerHTML = whatsappNotifications.map(notification => `
+// Display notifications with pagination
+function displayNotifications(notifications, pagination) {
+    // Update current page and app
+    currentNotificationPage = pagination.currentPage;
+    
+    // Get the active tab to determine which container to update
+    const activeTab = document.querySelector('.tab.active');
+    let containerId = '';
+    let appName = '';
+    
+    if (activeTab) {
+        const tabId = activeTab.getAttribute('data-tab');
+        switch (tabId) {
+            case 'whatsapp':
+                containerId = 'whatsapp-notifications';
+                appName = 'WhatsApp';
+                break;
+            case 'instagram':
+                containerId = 'instagram-notifications';
+                appName = 'Instagram';
+                break;
+            case 'others':
+                containerId = 'others-notifications';
+                appName = 'other';
+                break;
+            default:
+                // If no specific tab is active, show all notifications in the first available container
+                containerId = 'whatsapp-notifications';
+                appName = '';
+        }
+    }
+    
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Display notifications
+    if (notifications.length > 0) {
+        container.innerHTML = notifications.map(notification => `
             <div class="notification-item">
                 <div class="notification-header">
+                    ${!appName || appName === 'other' ? `<span class="notification-app">${notification.app_name}</span>` : ''}
                     <span class="notification-sender">${notification.sender || 'Unknown'}</span>
                     <span class="notification-time">${new Date(notification.timestamp).toLocaleString()}</span>
                 </div>
                 <div class="notification-message">${notification.message || 'No message content'}</div>
             </div>
         `).join('');
+        
+        // Add pagination controls
+        addPaginationControls(container, pagination, appName);
     } else {
-        whatsappContainer.innerHTML = '<p class="no-notifications">No WhatsApp notifications found.</p>';
+        const displayName = appName === 'other' ? 'other' : (appName || 'all');
+        container.innerHTML = `<p class="no-notifications">No ${displayName} notifications found.</p>`;
     }
+}
 
-    // Display Instagram notifications
-    const instagramContainer = document.getElementById('instagram-notifications');
-    if (instagramNotifications.length > 0) {
-        instagramContainer.innerHTML = instagramNotifications.map(notification => `
-            <div class="notification-item">
-                <div class="notification-header">
-                    <span class="notification-sender">${notification.sender || 'Unknown'}</span>
-                    <span class="notification-time">${new Date(notification.timestamp).toLocaleString()}</span>
-                </div>
-                <div class="notification-message">${notification.message || 'No message content'}</div>
-            </div>
-        `).join('');
-    } else {
-        instagramContainer.innerHTML = '<p class="no-notifications">No Instagram notifications found.</p>';
-    }
-
-    // Display other notifications
-    const othersContainer = document.getElementById('others-notifications');
-    if (otherNotifications.length > 0) {
-        othersContainer.innerHTML = otherNotifications.map(notification => `
-            <div class="notification-item">
-                <div class="notification-header">
-                    <span class="notification-app">${notification.app_name}</span>
-                    <span class="notification-sender">${notification.sender || 'Unknown'}</span>
-                    <span class="notification-time">${new Date(notification.timestamp).toLocaleString()}</span>
-                </div>
-                <div class="notification-message">${notification.message || 'No message content'}</div>
-            </div>
-        `).join('');
-    } else {
-        othersContainer.innerHTML = '<p class="no-notifications">No other notifications found.</p>';
-    }
+// Add pagination controls to notification container
+function addPaginationControls(container, pagination, appName) {
+    const paginationHtml = `
+        <div class="pagination" style="margin-top: 20px; text-align: center;">
+            <button class="btn secondary" ${!pagination.hasPrev ? 'disabled' : ''} 
+                    onclick="loadNotifications(${pagination.currentPage - 1}, '${appName}')">
+                Previous
+            </button>
+            <span class="pagination-info" style="margin: 0 15px;">
+                Page ${pagination.currentPage} of ${pagination.totalPages} 
+                (${pagination.totalCount} total notifications)
+            </span>
+            <button class="btn secondary" ${!pagination.hasNext ? 'disabled' : ''} 
+                    onclick="loadNotifications(${pagination.currentPage + 1}, '${appName}')">
+                Next
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', paginationHtml);
 }
 
 // Display no notifications message
@@ -1096,7 +1128,7 @@ function refreshAll() {
     }
     
     // Reload all data
-    loadNotifications();
+    loadNotifications(1, ''); // Load all notifications initially
     loadBlogPosts();
     loadDocuments();
 }
