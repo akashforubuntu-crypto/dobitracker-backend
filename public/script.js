@@ -665,6 +665,14 @@ function setupTabEventListeners() {
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const tabName = this.getAttribute('data-tab');
+            
+            // For blog and documents tabs, just reload the page
+            if (tabName === 'blog' || tabName === 'documents') {
+                window.location.reload();
+                return;
+            }
+            
+            // For other tabs, use normal behavior
             showTab(tabName, this);
         });
     });
