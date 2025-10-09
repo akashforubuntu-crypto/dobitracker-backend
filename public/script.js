@@ -834,6 +834,11 @@ function loadBlogPosts() {
     })
     .then(data => {
         const blogList = document.querySelector('.blog-list');
+        if (!blogList) {
+            console.error('Blog list element not found');
+            return;
+        }
+        
         if (data.blogs && data.blogs.length > 0) {
             blogList.innerHTML = data.blogs.map(blog => `
                 <div class="blog-card" data-blog-id="${blog.id || ''}" style="cursor: pointer;">
@@ -921,6 +926,11 @@ function loadDocuments() {
     })
     .then(data => {
         const documentsContent = document.getElementById('documents-content');
+        if (!documentsContent) {
+            console.error('Documents content element not found');
+            return;
+        }
+        
         if (data.documents && data.documents.length > 0) {
             // Group documents by type
             const documentsByType = {};
@@ -969,7 +979,10 @@ function loadDocuments() {
     })
     .catch(error => {
         console.error('Error loading documents:', error);
-        document.getElementById('documents-content').innerHTML = '<p class="error-message">Error loading documents. Please try again later.</p>';
+        const documentsContent = document.getElementById('documents-content');
+        if (documentsContent) {
+            documentsContent.innerHTML = '<p class="error-message">Error loading documents. Please try again later.</p>';
+        }
     });
 }
 
