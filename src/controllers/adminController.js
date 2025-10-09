@@ -90,15 +90,24 @@ const updateUserHandler = async (req, res) => {
 
 const getNotificationsForUser = async (req, res) => {
   try {
-    const { deviceId } = req.params;
+    const { userId } = req.params;
     const { app, page = 1, limit = 25 } = req.query;
     
     // Validate input
-    if (!deviceId) {
-      return res.status(400).json({ message: 'Device ID is required' });
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
     }
     
-    console.log(`Fetching notifications for device: ${deviceId}, app: ${app}, page: ${page}, limit: ${limit}`);
+    console.log(`Fetching notifications for user ID: ${userId}, app: ${app}, page: ${page}, limit: ${limit}`);
+    
+    // First, find the user by ID to get their device ID
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const deviceId = user.device_id;
+    console.log(`Found user: ${user.name} (${user.email}), device ID: ${deviceId}`);
     
     let notifications;
     let totalCount;
@@ -119,6 +128,12 @@ const getNotificationsForUser = async (req, res) => {
     
     res.status(200).json({
       message: 'Notifications fetched successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        device_id: user.device_id
+      },
       notifications: notifications,
       pagination: {
         currentPage: parseInt(page),

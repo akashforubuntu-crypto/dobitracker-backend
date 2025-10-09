@@ -977,14 +977,14 @@ function handleLoadNotifications() {
     const notificationTabs = document.getElementById('notification-tabs');
     const notificationsContainer = document.getElementById('notifications-container');
     
-    const deviceId = userIdInput.value.trim();
+    const userId = userIdInput.value.trim();
     
-    if (!deviceId) {
-        alert('Please enter a device ID');
+    if (!userId) {
+        alert('Please enter a user ID');
         return;
     }
     
-    currentUser = deviceId;
+    currentUser = userId;
     currentPage = 1;
     currentApp = '';
     
@@ -1036,7 +1036,7 @@ function loadNotifications() {
     .then(response => response.json())
     .then(data => {
         if (data.notifications) {
-            displayNotifications(data.notifications, data.pagination);
+            displayNotifications(data.notifications, data.pagination, data.user);
         }
     })
     .catch(error => {
@@ -1045,14 +1045,28 @@ function loadNotifications() {
 }
 
 // Display notifications with pagination
-function displayNotifications(notifications, pagination) {
+function displayNotifications(notifications, pagination, user) {
     const container = document.getElementById('notifications-list');
     const paginationContainer = document.getElementById('pagination');
     
     if (!container) return;
     
+    // Display user information if available
+    let userInfo = '';
+    if (user) {
+        userInfo = `
+            <div class="user-info" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                <h3 style="margin: 0 0 10px 0; color: #333;">User Information</h3>
+                <p style="margin: 5px 0;"><strong>Name:</strong> ${user.name}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> ${user.email}</p>
+                <p style="margin: 5px 0;"><strong>User ID:</strong> ${user.id}</p>
+                <p style="margin: 5px 0;"><strong>Device ID:</strong> ${user.device_id}</p>
+            </div>
+        `;
+    }
+    
     if (notifications.length === 0) {
-        container.innerHTML = '<p>No notifications found.</p>';
+        container.innerHTML = userInfo + '<p>No notifications found.</p>';
         paginationContainer.innerHTML = '';
         return;
     }
@@ -1066,7 +1080,7 @@ function displayNotifications(notifications, pagination) {
         );
     }
     
-    container.innerHTML = displayNotifications.map(notification => `
+    container.innerHTML = userInfo + displayNotifications.map(notification => `
         <div class="notification-item">
             <div class="notification-content">
                 <div class="notification-app">${notification.app_name || 'Unknown App'}</div>
