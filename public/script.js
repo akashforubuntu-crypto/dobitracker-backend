@@ -1167,15 +1167,15 @@ function setupDynamicButtonEventListeners() {
         // Blog back buttons
         if (e.target && (e.target.id === 'back-to-blog-list' || e.target.id === 'back-to-blog-list-footer')) {
             console.log('Blog back button clicked');
-            loadBlogPosts();
             showTab('blog');
+            loadBlogPosts();
         }
         
         // Document back buttons
         if (e.target && (e.target.id === 'back-to-documents-list' || e.target.id === 'back-to-documents-list-footer')) {
             console.log('Document back button clicked');
-            loadDocuments();
             showTab('documents');
+            loadDocuments();
         }
         
         // Refresh button
