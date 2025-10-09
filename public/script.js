@@ -930,7 +930,6 @@ function loadBlogPost(id) {
             `;
             
             // Just make sure the blog tab is visible (don't call showTab to avoid reloading content)
-            const blogTab = document.getElementById('blog-tab');
             if (blogTab) {
                 blogTab.classList.add('active');
             }
@@ -1057,7 +1056,6 @@ function loadDocument(type) {
             `;
             
             // Just make sure the documents tab is visible (don't call showTab to avoid reloading content)
-            const documentsTab = document.getElementById('documents-tab');
             if (documentsTab) {
                 documentsTab.classList.add('active');
             }
