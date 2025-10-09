@@ -50,7 +50,7 @@ const createMultipleNotifications = async (notifications) => {
     for (const notification of notifications) {
       const values = [
         notification.deviceId,
-        notification.appName,
+        notification.app_name || notification.appName, // Handle both API field names
         notification.sender,
         notification.message,
         notification.timestamp || new Date()
