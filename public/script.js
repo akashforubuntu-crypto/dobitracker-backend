@@ -1141,7 +1141,8 @@ function getExcerpt(htmlContent, maxLength = 150) {
 function setupBlogCardEventListeners() {
     const blogCards = document.querySelectorAll('.blog-card');
     blogCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent tab click event
             const blogId = this.getAttribute('data-blog-id');
             if (blogId) {
                 loadBlogPost(blogId);
@@ -1155,7 +1156,8 @@ function setupBlogCardEventListeners() {
 function setupDocumentCardEventListeners() {
     const documentCards = document.querySelectorAll('.document-card');
     documentCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent tab click event
             const documentType = this.getAttribute('data-document-type');
             if (documentType) {
                 loadDocument(documentType);
