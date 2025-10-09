@@ -54,6 +54,19 @@ const fetchNotifications = async (req, res) => {
       return res.status(400).json({ message: 'Device ID is required' });
     }
     
+    // Check if user is authenticated
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    // For regular users, check if they can only access their own device
+    // Admins can access any device (checked in admin routes)
+    if (req.user.role !== 'admin') {
+      if (!req.user.device_id || req.user.device_id !== device_id) {
+        return res.status(403).json({ message: 'Access denied: You can only view your own notifications' });
+      }
+    }
+    
     let notifications;
     
     if (app) {
