@@ -52,16 +52,19 @@ function loadBlogPreview() {
             // Show only the latest 3 blogs
             const latestBlogs = data.blogs.slice(0, 3);
             blogPreview.innerHTML = latestBlogs.map(blog => `
-                <div class="blog-preview-item">
+                <div class="blog-preview-item" data-blog-id="${blog.id}">
                     <div class="blog-preview-image">
                         <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}">
                     </div>
                     <div class="blog-preview-content">
-                        <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
+                        <h3>${blog.title}</h3>
                         <p class="blog-preview-date">${new Date(blog.created_at).toLocaleDateString()}</p>
                     </div>
                 </div>
             `).join('');
+            
+            // Add event listeners for blog preview items
+            setupBlogPreviewEventListeners();
         } else {
             blogPreview.innerHTML = '<p>No blog posts available yet.</p>';
         }
@@ -831,7 +834,7 @@ function loadBlogPosts() {
         const blogList = document.querySelector('.blog-list');
         if (data.blogs && data.blogs.length > 0) {
             blogList.innerHTML = data.blogs.map(blog => `
-                <div class="blog-card" onclick="loadBlogPost(${blog.id})" style="cursor: pointer;">
+                <div class="blog-card" data-blog-id="${blog.id}" style="cursor: pointer;">
                     <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title}" class="blog-image">
                     <div class="blog-content">
                         <h3 class="blog-title">${blog.title}</h3>
@@ -840,6 +843,9 @@ function loadBlogPosts() {
                     </div>
                 </div>
             `).join('');
+            
+            // Add event listeners for blog cards
+            setupBlogCardEventListeners();
         } else {
             blogList.innerHTML = '<p>No blog posts available.</p>';
         }
@@ -865,7 +871,7 @@ function loadBlogPost(id) {
             blogTab.innerHTML = `
                 <div class="blog-post-view">
                     <div class="blog-post-header">
-                        <button class="btn secondary" onclick="loadBlogPosts(); showTab('blog')">← Back to Blog List</button>
+                        <button class="btn secondary" id="back-to-blog-list">← Back to Blog List</button>
                         <h1>${data.blog.title}</h1>
                         <p class="blog-post-meta">
                             Published on ${new Date(data.blog.created_at).toLocaleDateString()}
@@ -882,10 +888,13 @@ function loadBlogPost(id) {
                         ${data.blog.html_content}
                     </div>
                     <div class="blog-post-footer">
-                        <button class="btn primary" onclick="loadBlogPosts(); showTab('blog')">Back to Blog List</button>
+                        <button class="btn primary" id="back-to-blog-list-footer">Back to Blog List</button>
                     </div>
                 </div>
             `;
+            
+            // Add event listeners for back buttons
+            setupBlogPostEventListeners();
             showTab('blog');
         } else {
             alert('Blog post not found.');
@@ -923,7 +932,7 @@ function loadDocuments() {
                 <div class="document-section">
                     <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
                     ${documentsByType[type].map(doc => `
-                        <div class="document-card" onclick="loadDocument('${doc.type}')" style="cursor: pointer;">
+                        <div class="document-card" data-document-type="${doc.type}" style="cursor: pointer;">
                             <div class="document-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -947,6 +956,9 @@ function loadDocuments() {
                     `).join('')}
                 </div>
             `).join('');
+            
+            // Add event listeners for document cards
+            setupDocumentCardEventListeners();
         } else {
             documentsContent.innerHTML = '<p>No documents available.</p>';
         }
@@ -972,7 +984,7 @@ function loadDocument(type) {
             documentsTab.innerHTML = `
                 <div class="document-view">
                     <div class="document-header">
-                        <button class="btn secondary" onclick="loadDocuments(); showTab('documents')">← Back to Documents</button>
+                        <button class="btn secondary" id="back-to-documents-list">← Back to Documents</button>
                         <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
                         <p class="document-meta">
                             Last updated: ${new Date(data.document.updated_at).toLocaleDateString()}
@@ -982,10 +994,13 @@ function loadDocument(type) {
                         ${data.document.content}
                     </div>
                     <div class="document-footer">
-                        <button class="btn primary" onclick="loadDocuments(); showTab('documents')">Back to Documents</button>
+                        <button class="btn primary" id="back-to-documents-list-footer">Back to Documents</button>
                     </div>
                 </div>
             `;
+            
+            // Add event listeners for back buttons
+            setupDocumentViewEventListeners();
             showTab('documents');
         } else {
             alert('Document not found.');
@@ -1090,4 +1105,65 @@ function getExcerpt(htmlContent, maxLength = 150) {
     }
     
     return textContent.substring(0, maxLength).trim() + '...';
+}
+
+// Setup blog card event listeners
+function setupBlogCardEventListeners() {
+    const blogCards = document.querySelectorAll('.blog-card');
+    blogCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const blogId = this.getAttribute('data-blog-id');
+            if (blogId) {
+                loadBlogPost(blogId);
+            }
+        });
+    });
+}
+
+// Setup blog post event listeners
+function setupBlogPostEventListeners() {
+    const backButtons = document.querySelectorAll('#back-to-blog-list, #back-to-blog-list-footer');
+    backButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            loadBlogPosts();
+            showTab('blog');
+        });
+    });
+}
+
+// Setup document card event listeners
+function setupDocumentCardEventListeners() {
+    const documentCards = document.querySelectorAll('.document-card');
+    documentCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const documentType = this.getAttribute('data-document-type');
+            if (documentType) {
+                loadDocument(documentType);
+            }
+        });
+    });
+}
+
+// Setup document view event listeners
+function setupDocumentViewEventListeners() {
+    const backButtons = document.querySelectorAll('#back-to-documents-list, #back-to-documents-list-footer');
+    backButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            loadDocuments();
+            showTab('documents');
+        });
+    });
+}
+
+// Setup blog preview event listeners
+function setupBlogPreviewEventListeners() {
+    const blogPreviewItems = document.querySelectorAll('.blog-preview-item');
+    blogPreviewItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const blogId = this.getAttribute('data-blog-id');
+            if (blogId) {
+                window.location.href = `/blog-post.html?id=${blogId}`;
+            }
+        });
+    });
 }

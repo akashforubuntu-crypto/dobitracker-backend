@@ -52,20 +52,23 @@ function loadBlogList() {
             blogList.innerHTML = `
                 <div class="blog-grid">
                     ${data.blogs.map(blog => `
-                        <article class="blog-card">
+                        <article class="blog-card" data-blog-id="${blog.id}">
                             <div class="blog-card-image">
                                 <img src="${blog.featured_image_url || 'https://via.placeholder.com/400x250'}" alt="${blog.title}">
                             </div>
                             <div class="blog-card-content">
-                                <h3><a href="/blog-post.html?id=${blog.id}">${blog.title}</a></h3>
+                                <h3>${blog.title}</h3>
                                 <p class="blog-card-date">${new Date(blog.created_at).toLocaleDateString()}</p>
                                 <p class="blog-card-excerpt">${getExcerpt(blog.html_content)}</p>
-                                <a href="/blog-post.html?id=${blog.id}" class="btn primary">Read More</a>
+                                <button class="btn primary blog-read-more" data-blog-id="${blog.id}">Read More</button>
                             </div>
                         </article>
                     `).join('')}
                 </div>
             `;
+            
+            // Add event listeners for blog cards
+            setupBlogPageEventListeners();
         } else {
             blogList.innerHTML = '<p>No blog posts available yet.</p>';
         }
@@ -134,4 +137,30 @@ function getExcerpt(htmlContent, maxLength = 150) {
     }
     
     return textContent.substring(0, maxLength).trim() + '...';
+}
+
+// Setup blog page event listeners
+function setupBlogPageEventListeners() {
+    // Add click listeners to blog cards
+    const blogCards = document.querySelectorAll('.blog-card');
+    blogCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const blogId = this.getAttribute('data-blog-id');
+            if (blogId) {
+                window.location.href = `/blog-post.html?id=${blogId}`;
+            }
+        });
+    });
+    
+    // Add click listeners to read more buttons
+    const readMoreButtons = document.querySelectorAll('.blog-read-more');
+    readMoreButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click
+            const blogId = this.getAttribute('data-blog-id');
+            if (blogId) {
+                window.location.href = `/blog-post.html?id=${blogId}`;
+            }
+        });
+    });
 }
