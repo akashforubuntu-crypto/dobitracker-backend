@@ -881,8 +881,7 @@ function loadBlogPost(id) {
             blogTab.innerHTML = `
                 <div class="blog-post-view">
                     <div class="blog-post-header">
-                        <button class="btn secondary" id="back-to-blog-list">← Back to Blog List</button>
-                    <h1>${data.blog.title}</h1>
+                        <h1>${data.blog.title}</h1>
                         <p class="blog-post-meta">
                             Published on ${new Date(data.blog.created_at).toLocaleDateString()}
                             ${data.blog.updated_at !== data.blog.created_at ? 
@@ -896,9 +895,6 @@ function loadBlogPost(id) {
                     ` : ''}
                     <div class="blog-post-content">
                         ${data.blog.html_content}
-                    </div>
-                    <div class="blog-post-footer">
-                        <button class="btn primary" id="back-to-blog-list-footer">Back to Blog List</button>
                     </div>
                 </div>
             `;
@@ -1001,17 +997,13 @@ function loadDocument(type) {
             documentsTab.innerHTML = `
                 <div class="document-view">
                     <div class="document-header">
-                        <button class="btn secondary" id="back-to-documents-list">← Back to Documents</button>
-                    <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
+                        <h1>${data.document.type.charAt(0).toUpperCase() + data.document.type.slice(1)}</h1>
                         <p class="document-meta">
                             Last updated: ${new Date(data.document.updated_at).toLocaleDateString()}
                         </p>
                     </div>
                     <div class="document-content">
                         ${data.document.content}
-                    </div>
-                    <div class="document-footer">
-                        <button class="btn primary" id="back-to-documents-list-footer">Back to Documents</button>
                     </div>
                 </div>
             `;
@@ -1164,20 +1156,6 @@ function setupBlogPreviewEventListeners() {
 function setupDynamicButtonEventListeners() {
     // Use event delegation on the document body for all dynamic buttons
     document.body.addEventListener('click', function(e) {
-        // Blog back buttons
-        if (e.target && (e.target.id === 'back-to-blog-list' || e.target.id === 'back-to-blog-list-footer')) {
-            console.log('Blog back button clicked');
-            showTab('blog');
-            loadBlogPosts();
-        }
-        
-        // Document back buttons
-        if (e.target && (e.target.id === 'back-to-documents-list' || e.target.id === 'back-to-documents-list-footer')) {
-            console.log('Document back button clicked');
-            showTab('documents');
-            loadDocuments();
-        }
-        
         // Refresh button
         if (e.target && e.target.id === 'refreshBtn') {
             console.log('Refresh button clicked');
