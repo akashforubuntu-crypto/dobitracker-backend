@@ -109,6 +109,11 @@ const getNotificationsForUser = async (req, res) => {
     const deviceId = user.device_id;
     console.log(`Found user: ${user.name} (${user.email}), device ID: ${deviceId}`);
     
+    // Validate that device_id exists
+    if (!deviceId) {
+      return res.status(400).json({ message: 'User does not have a device ID' });
+    }
+    
     let notifications;
     let totalCount;
     
