@@ -665,14 +665,6 @@ function setupTabEventListeners() {
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const tabName = this.getAttribute('data-tab');
-            
-            // For blog and documents tabs, just reload the page
-            if (tabName === 'blog' || tabName === 'documents') {
-                window.location.reload();
-                return;
-            }
-            
-            // For other tabs, use normal behavior
             showTab(tabName, this);
         });
     });
@@ -705,12 +697,14 @@ function showTab(tabName, clickedElement = null) {
         clickedElement.classList.add('active');
     }
     
-    // Refresh content based on tab type
+    // Always refresh content when tab is clicked
     if (['whatsapp', 'instagram', 'others'].includes(tabName)) {
         loadNotifications();
     } else if (tabName === 'blog') {
+        // Always fetch and display blog posts
         loadBlogPosts();
     } else if (tabName === 'documents') {
+        // Always fetch and display documents
         loadDocuments();
     }
 }
