@@ -839,35 +839,45 @@ function loadBlogPosts() {
         return response.json();
     })
     .then(data => {
-        const blogList = document.querySelector('.blog-list');
-        if (!blogList) {
-            console.error('Blog list element not found');
+        // Find the blog tab content container
+        const blogTab = document.getElementById('blog-tab');
+        if (!blogTab) {
+            console.error('Blog tab element not found');
             return;
         }
         
+        // Create the blog list HTML
+        let blogListHTML = '';
         if (data.blogs && data.blogs.length > 0) {
-            blogList.innerHTML = data.blogs.map(blog => `
-                <div class="blog-card" data-blog-id="${blog.id || ''}" style="cursor: pointer;">
-                    <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}" class="blog-image">
-                    <div class="blog-content">
-                        <h3 class="blog-title">${blog.title || 'Untitled'}</h3>
-                        <p class="blog-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
-                        <p class="blog-excerpt">${getExcerpt(blog.html_content)}</p>
-                    </div>
+            blogListHTML = `
+                <div class="blog-list">
+                    ${data.blogs.map(blog => `
+                        <div class="blog-card" data-blog-id="${blog.id || ''}" style="cursor: pointer;">
+                            <img src="${blog.featured_image_url || 'https://via.placeholder.com/300x200'}" alt="${blog.title || 'Blog Post'}" class="blog-image">
+                            <div class="blog-content">
+                                <h3 class="blog-title">${blog.title || 'Untitled'}</h3>
+                                <p class="blog-date">${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : 'No date'}</p>
+                                <p class="blog-excerpt">${getExcerpt(blog.html_content)}</p>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('');
-            
-            // Add event listeners for blog cards
-            setupBlogCardEventListeners();
+            `;
         } else {
-            blogList.innerHTML = '<p>No blog posts available.</p>';
+            blogListHTML = '<div class="blog-list"><p>No blog posts available.</p></div>';
         }
+        
+        // Set the blog tab content
+        blogTab.innerHTML = blogListHTML;
+        
+        // Add event listeners for blog cards
+        setupBlogCardEventListeners();
     })
     .catch(error => {
         console.error('Error loading blog posts:', error);
-        const blogList = document.querySelector('.blog-list');
-        if (blogList) {
-            blogList.innerHTML = '<p class="error-message">Error loading blog posts. Please try again later.</p>';
+        const blogTab = document.getElementById('blog-tab');
+        if (blogTab) {
+            blogTab.innerHTML = '<div class="blog-list"><p class="error-message">Error loading blog posts. Please try again later.</p></div>';
         }
     });
 }
@@ -927,12 +937,15 @@ function loadDocuments() {
         return response.json();
     })
     .then(data => {
-        const documentsContent = document.getElementById('documents-content');
-        if (!documentsContent) {
-            console.error('Documents content element not found');
+        // Find the documents tab content container
+        const documentsTab = document.getElementById('documents-tab');
+        if (!documentsTab) {
+            console.error('Documents tab element not found');
             return;
         }
         
+        // Create the documents HTML
+        let documentsHTML = '';
         if (data.documents && data.documents.length > 0) {
             // Group documents by type
             const documentsByType = {};
@@ -944,46 +957,53 @@ function loadDocuments() {
             });
             
             // Display documents
-            documentsContent.innerHTML = Object.keys(documentsByType).map(type => `
-                <div class="document-section">
-                <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-                ${documentsByType[type].map(doc => `
-                        <div class="document-card" data-document-type="${doc.type}" style="cursor: pointer;">
-                            <div class="document-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14,2 14,8 20,8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10,9 9,9 8,9"></polyline>
-                                </svg>
-                            </div>
-                            <div class="document-info">
-                                <h4>${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}</h4>
-                                <p class="document-date">Last updated: ${new Date(doc.updated_at).toLocaleDateString()}</p>
-                                <p class="document-preview">Click to read the full document</p>
-                            </div>
-                            <div class="document-arrow">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9,18 15,12 9,6"></polyline>
-                                </svg>
-                            </div>
-                    </div>
-                `).join('')}
+            documentsHTML = `
+                <div id="documents-content">
+                    ${Object.keys(documentsByType).map(type => `
+                        <div class="document-section">
+                            <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
+                            ${documentsByType[type].map(doc => `
+                                <div class="document-card" data-document-type="${doc.type}" style="cursor: pointer;">
+                                    <div class="document-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14,2 14,8 20,8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10,9 9,9 8,9"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="document-info">
+                                        <h4>${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}</h4>
+                                        <p class="document-date">Last updated: ${new Date(doc.updated_at).toLocaleDateString()}</p>
+                                        <p class="document-preview">Click to read the full document</p>
+                                    </div>
+                                    <div class="document-arrow">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9,18 15,12 9,6"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('');
-            
-            // Add event listeners for document cards
-            setupDocumentCardEventListeners();
+            `;
         } else {
-            documentsContent.innerHTML = '<p>No documents available.</p>';
+            documentsHTML = '<div id="documents-content"><p>No documents available.</p></div>';
         }
+        
+        // Set the documents tab content
+        documentsTab.innerHTML = documentsHTML;
+        
+        // Add event listeners for document cards
+        setupDocumentCardEventListeners();
     })
     .catch(error => {
         console.error('Error loading documents:', error);
-        const documentsContent = document.getElementById('documents-content');
-        if (documentsContent) {
-            documentsContent.innerHTML = '<p class="error-message">Error loading documents. Please try again later.</p>';
+        const documentsTab = document.getElementById('documents-tab');
+        if (documentsTab) {
+            documentsTab.innerHTML = '<div id="documents-content"><p class="error-message">Error loading documents. Please try again later.</p></div>';
         }
     });
 }
