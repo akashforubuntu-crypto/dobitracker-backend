@@ -666,20 +666,32 @@ function setupTabEventListeners() {
         tab.addEventListener('click', function(e) {
             const tabName = this.getAttribute('data-tab');
             
-            // For blog and documents tabs, don't use showTab - handle directly
+            // For blog and documents tabs, check if we're viewing individual content
             if (tabName === 'blog') {
-                e.preventDefault();
-                e.stopPropagation();
-                // Just switch to blog tab without calling showTab
+                const blogTab = document.getElementById('blog-tab');
+                // If blog tab contains a blog-post-view, don't do anything
+                if (blogTab && blogTab.querySelector('.blog-post-view')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                // Otherwise, switch to blog tab and load content
                 switchToBlogTab(this);
+                loadBlogPosts();
                 return;
             }
             
             if (tabName === 'documents') {
-                e.preventDefault();
-                e.stopPropagation();
-                // Just switch to documents tab without calling showTab
+                const documentsTab = document.getElementById('documents-tab');
+                // If documents tab contains a document-view, don't do anything
+                if (documentsTab && documentsTab.querySelector('.document-view')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                // Otherwise, switch to documents tab and load content
                 switchToDocumentsTab(this);
+                loadDocuments();
                 return;
             }
             
