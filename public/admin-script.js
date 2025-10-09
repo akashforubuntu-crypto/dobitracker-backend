@@ -933,195 +933,232 @@ function logout() {
 
 // Load notifications management interface
 function loadNotificationsManagement() {
-    const notificationsManagement = document.getElementById('notifications-management');
-    notificationsManagement.innerHTML = `
-        <div class="notifications-header">
-            <h2>Notification Management</h2>
-            <div class="user-search-container">
-                <label for="userIdInput">Enter User ID:</label>
-                <input type="text" id="userIdInput" placeholder="Enter user ID to view notifications">
-                <button class="btn primary" id="searchNotificationsBtn">Search Notifications</button>
-            </div>
-        </div>
-        <div id="notifications-results">
-            <p class="search-prompt">Enter a user ID above to view their notifications.</p>
-        </div>
-    `;
+    // Load users for the dropdown
+    loadUsersForNotifications();
     
-    // Setup notification search event listener
-    setupNotificationSearchListener();
+    // Setup event listeners
+    setupNotificationEventListeners();
 }
 
-// Setup notification search event listener
-function setupNotificationSearchListener() {
-    const searchBtn = document.getElementById('searchNotificationsBtn');
-    const userIdInput = document.getElementById('userIdInput');
+// Global variables for notification management
+let currentUser = null;
+let currentApp = '';
+let currentPage = 1;
+const notificationsPerPage = 25;
+
+// Load users for notification selection
+function loadUsersForNotifications() {
+    const token = localStorage.getItem('token');
     
-    if (searchBtn) {
-        searchBtn.addEventListener('click', searchUserNotifications);
+    fetch('/api/admin/users', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.users) {
+            populateUserSelect(data.users);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading users:', error);
+    });
+}
+
+// Populate user select dropdown
+function populateUserSelect(users) {
+    const userSelect = document.getElementById('user-select');
+    if (!userSelect) return;
+    
+    userSelect.innerHTML = '<option value="">Choose a user...</option>';
+    
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.device_id;
+        option.textContent = `${user.name} (${user.email})`;
+        userSelect.appendChild(option);
+    });
+}
+
+// Setup notification event listeners
+function setupNotificationEventListeners() {
+    const userSelect = document.getElementById('user-select');
+    const notificationTabs = document.getElementById('notification-tabs');
+    
+    if (userSelect) {
+        userSelect.addEventListener('change', handleUserSelection);
     }
     
-    if (userIdInput) {
-        userIdInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchUserNotifications();
+    if (notificationTabs) {
+        notificationTabs.addEventListener('click', function(e) {
+            if (e.target.classList.contains('notification-tab')) {
+                const app = e.target.getAttribute('data-app');
+                handleNotificationTabChange(app);
             }
         });
     }
 }
 
-// Search notifications for a specific user
-function searchUserNotifications() {
-    const userId = document.getElementById('userIdInput').value.trim();
+// Handle user selection change
+function handleUserSelection() {
+    const userSelect = document.getElementById('user-select');
+    const notificationTabs = document.getElementById('notification-tabs');
+    const notificationsContainer = document.getElementById('notifications-container');
     
-    if (!userId) {
-        alert('Please enter a user ID');
-        return;
+    if (userSelect.value) {
+        currentUser = userSelect.value;
+        currentPage = 1;
+        currentApp = '';
+        
+        // Show tabs and container
+        notificationTabs.style.display = 'flex';
+        notificationsContainer.style.display = 'block';
+        
+        // Reset active tab
+        document.querySelectorAll('.notification-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector('.notification-tab[data-app=""]').classList.add('active');
+        
+        // Load notifications
+        loadNotifications();
+    } else {
+        // Hide tabs and container
+        notificationTabs.style.display = 'none';
+        notificationsContainer.style.display = 'none';
     }
+}
+
+// Handle notification tab change
+function handleNotificationTabChange(app) {
+    currentApp = app;
+    currentPage = 1;
+    
+    // Update active tab
+    document.querySelectorAll('.notification-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`.notification-tab[data-app="${app}"]`).classList.add('active');
+    
+    // Load notifications
+    loadNotifications();
+}
+
+// Load notifications with pagination
+function loadNotifications() {
+    if (!currentUser) return;
     
     const token = localStorage.getItem('token');
-    if (!token) {
-    window.location.href = '/';
-        return;
+    let url = `/api/admin/notifications/${currentUser}?page=${currentPage}&limit=${notificationsPerPage}`;
+    
+    if (currentApp && currentApp !== 'other') {
+        url += `&app=${encodeURIComponent(currentApp)}`;
     }
     
-    // First, get user details to find their device ID
-    fetch(`/api/admin/users/${userId}`, {
+    fetch(url, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert('Session expired. Please login again.');
-                logout();
-                return;
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        if (data.user && data.user.device_id) {
-            // Now fetch notifications for this device
-            fetchNotificationsForDevice(data.user.device_id, data.user.name);
-        } else {
-            document.getElementById('notifications-results').innerHTML = `
-                <div class="error-message">
-                    <p>User not found or user has no device ID.</p>
-                </div>
-            `;
+        if (data.notifications) {
+            displayNotifications(data.notifications, data.pagination);
         }
     })
     .catch(error => {
-        console.error('Error fetching user:', error);
-        document.getElementById('notifications-results').innerHTML = `
-            <div class="error-message">
-                <p>Error fetching user: ${error.message}</p>
-            </div>
-        `;
+        console.error('Error loading notifications:', error);
     });
 }
 
-// Fetch notifications for a specific device
-function fetchNotificationsForDevice(deviceId, userName) {
-    const token = localStorage.getItem('token');
+// Display notifications with pagination
+function displayNotifications(notifications, pagination) {
+    const container = document.getElementById('notifications-list');
+    const paginationContainer = document.getElementById('pagination');
     
-    fetch(`/api/admin/notifications/${deviceId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert('Session expired. Please login again.');
-                logout();
-                return;
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        displayUserNotifications(data.notifications, userName, deviceId);
-    })
-    .catch(error => {
-        console.error('Error fetching notifications:', error);
-        document.getElementById('notifications-results').innerHTML = `
-            <div class="error-message">
-                <p>Error fetching notifications: ${error.message}</p>
-            </div>
-        `;
-    });
-}
-
-// Display user notifications in tabular format
-function displayUserNotifications(notifications, userName, deviceId) {
-    const resultsContainer = document.getElementById('notifications-results');
+    if (!container) return;
     
-    if (!notifications || notifications.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="no-notifications">
-                <h3>Notifications for User: ${userName} (Device: ${deviceId})</h3>
-                <p>No notifications found for this user.</p>
-            </div>
-        `;
+    if (notifications.length === 0) {
+        container.innerHTML = '<p>No notifications found.</p>';
+        paginationContainer.innerHTML = '';
         return;
     }
     
-    // Group notifications by app
-    const notificationsByApp = {};
-    notifications.forEach(notification => {
-        const appName = notification.app_name || 'Unknown App';
-        if (!notificationsByApp[appName]) {
-            notificationsByApp[appName] = [];
-        }
-        notificationsByApp[appName].push(notification);
-    });
+    // Filter for "other" apps if needed
+    let displayNotifications = notifications;
+    if (currentApp === 'other') {
+        displayNotifications = notifications.filter(notification => 
+            notification.app_name !== 'WhatsApp' && 
+            notification.app_name !== 'Instagram'
+        );
+    }
     
-    let html = `
-        <div class="notifications-summary">
-            <h3>Notifications for User: ${userName} (Device: ${deviceId})</h3>
-            <p>Total notifications: ${notifications.length}</p>
+    container.innerHTML = displayNotifications.map(notification => `
+        <div class="notification-item">
+            <div class="notification-content">
+                <div class="notification-app">${notification.app_name || 'Unknown App'}</div>
+                <div class="notification-sender">From: ${notification.sender || 'Unknown'}</div>
+                <div class="notification-message">${notification.message || 'No message'}</div>
+                <div class="notification-time">${new Date(notification.timestamp).toLocaleString()}</div>
+            </div>
         </div>
-    `;
+    `).join('');
     
-    // Display notifications grouped by app
-    Object.keys(notificationsByApp).forEach(appName => {
-        const appNotifications = notificationsByApp[appName];
-        html += `
-            <div class="app-notifications">
-                <h4>${appName} (${appNotifications.length} notifications)</h4>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Sender</th>
-                                <th>Message</th>
-                                <th>Title</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${appNotifications.map(notification => `
-                                <tr>
-                                    <td>${new Date(notification.timestamp).toLocaleString()}</td>
-                                    <td>${notification.sender || 'N/A'}</td>
-                                    <td class="notification-message-cell">${notification.message || 'N/A'}</td>
-                                    <td>${notification.title || 'N/A'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    });
-    
-    resultsContainer.innerHTML = html;
+    // Display pagination
+    displayPagination(pagination);
 }
+
+// Display pagination controls
+function displayPagination(pagination) {
+    const container = document.getElementById('pagination');
+    if (!container || !pagination) return;
+    
+    const { currentPage, totalPages, totalCount, hasNext, hasPrev } = pagination;
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    paginationHTML += `<button ${!hasPrev ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Previous</button>`;
+    
+    // Page numbers
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (startPage > 1) {
+        paginationHTML += `<button onclick="changePage(1)">1</button>`;
+        if (startPage > 2) {
+            paginationHTML += `<span>...</span>`;
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span>...</span>`;
+        }
+        paginationHTML += `<button onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    // Next button
+    paginationHTML += `<button ${!hasNext ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>`;
+    
+    // Info
+    paginationHTML += `<div class="pagination-info">Page ${currentPage} of ${totalPages} (${totalCount} total)</div>`;
+    
+    container.innerHTML = paginationHTML;
+}
+
+// Change page
+function changePage(page) {
+    currentPage = page;
+    loadNotifications();
+}
+
+
 
 // Setup blog management event listeners
 function setupBlogManagementListeners() {

@@ -445,6 +445,152 @@ footer {
     padding: 20px;
 }
 
+/* User selection styles */
+.user-selection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.user-selection label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-selection select {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Notification tabs styles */
+.notification-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.notification-tab {
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.notification-tab:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.notification-tab.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Notifications container */
+.notifications-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notifications-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 15px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-app {
+    font-weight: 600;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.notification-sender {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.notification-message {
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    gap: 10px;
+}
+
+.pagination button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination-info {
+    margin: 0 15px;
+    color: #666;
+    font-size: 14px;
+}
+
 /* Notification Management Styles */
 .notifications-header {
     margin-bottom: 20px;

@@ -98,10 +98,88 @@ const getAllNotificationsByDeviceId = async (deviceId) => {
   }
 };
 
+// Paginated version of getAllNotificationsByDeviceId
+const getAllNotificationsByDeviceIdPaginated = async (deviceId, limit, offset) => {
+  const query = `
+    SELECT * FROM notifications 
+    WHERE device_id = $1
+    ORDER BY timestamp DESC
+    LIMIT $2 OFFSET $3
+  `;
+  
+  const values = [deviceId, limit, offset];
+  
+  try {
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Get count of notifications for a device
+const getNotificationCountByDeviceId = async (deviceId) => {
+  const query = `
+    SELECT COUNT(*) as count
+    FROM notifications 
+    WHERE device_id = $1
+  `;
+  
+  const values = [deviceId];
+  
+  try {
+    const result = await db.query(query, values);
+    return parseInt(result.rows[0].count);
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Paginated version of getNotificationsByDeviceIdAndApp
+const getNotificationsByDeviceIdAndAppPaginated = async (deviceId, appName, limit, offset) => {
+  const query = `
+    SELECT * FROM notifications 
+    WHERE device_id = $1 AND app_name = $2
+    ORDER BY timestamp DESC
+    LIMIT $3 OFFSET $4
+  `;
+  
+  const values = [deviceId, appName, limit, offset];
+  
+  try {
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Get count of notifications for a device and app
+const getNotificationCountByDeviceIdAndApp = async (deviceId, appName) => {
+  const query = `
+    SELECT COUNT(*) as count
+    FROM notifications 
+    WHERE device_id = $1 AND app_name = $2
+  `;
+  
+  const values = [deviceId, appName];
+  
+  try {
+    const result = await db.query(query, values);
+    return parseInt(result.rows[0].count);
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createNotificationsTable,
   createNotification,
   createMultipleNotifications,
   getNotificationsByDeviceIdAndApp,
-  getAllNotificationsByDeviceId
+  getAllNotificationsByDeviceId,
+  getAllNotificationsByDeviceIdPaginated,
+  getNotificationCountByDeviceId,
+  getNotificationsByDeviceIdAndAppPaginated,
+  getNotificationCountByDeviceIdAndApp
 };

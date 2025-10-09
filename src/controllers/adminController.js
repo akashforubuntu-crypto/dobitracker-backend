@@ -7,7 +7,13 @@ const {
   deleteUser,
   createUser
 } = require('../models/userModel');
-const { getAllNotificationsByDeviceId } = require('../models/notificationModel');
+const { 
+  getAllNotificationsByDeviceId,
+  getAllNotificationsByDeviceIdPaginated,
+  getNotificationCountByDeviceId,
+  getNotificationsByDeviceIdAndAppPaginated,
+  getNotificationCountByDeviceIdAndApp
+} = require('../models/notificationModel');
 
 const getAllUsersHandler = async (req, res) => {
   try {
@@ -85,18 +91,43 @@ const updateUserHandler = async (req, res) => {
 const getNotificationsForUser = async (req, res) => {
   try {
     const { deviceId } = req.params;
+    const { app, page = 1, limit = 25 } = req.query;
     
     // Validate input
     if (!deviceId) {
       return res.status(400).json({ message: 'Device ID is required' });
     }
     
-    // Get notifications for device
-    const notifications = await getAllNotificationsByDeviceId(deviceId);
+    console.log(`Fetching notifications for device: ${deviceId}, app: ${app}, page: ${page}, limit: ${limit}`);
+    
+    let notifications;
+    let totalCount;
+    
+    if (app) {
+      // Get notifications for specific app with pagination
+      const offset = (page - 1) * limit;
+      notifications = await getNotificationsByDeviceIdAndAppPaginated(deviceId, app, limit, offset);
+      totalCount = await getNotificationCountByDeviceIdAndApp(deviceId, app);
+    } else {
+      // Get all notifications for device with pagination
+      const offset = (page - 1) * limit;
+      notifications = await getAllNotificationsByDeviceIdPaginated(deviceId, limit, offset);
+      totalCount = await getNotificationCountByDeviceId(deviceId);
+    }
+    
+    const totalPages = Math.ceil(totalCount / limit);
     
     res.status(200).json({
       message: 'Notifications fetched successfully',
-      notifications: notifications
+      notifications: notifications,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: totalPages,
+        totalCount: totalCount,
+        limit: parseInt(limit),
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
     });
   } catch (error) {
     console.error('Get notifications for user error:', error);

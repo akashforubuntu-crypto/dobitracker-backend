@@ -82,8 +82,28 @@
         
         <div class="admin-tab-content" id="notifications-tab">
             <h2>Notifications</h2>
-            <div id="notifications-management">
-                <!-- Notifications management will be loaded here -->
+            <div class="user-selection">
+                <label for="user-select">Select User:</label>
+                <select id="user-select">
+                    <option value="">Choose a user...</option>
+                </select>
+            </div>
+            
+            <div class="notification-tabs" id="notification-tabs" style="display: none;">
+                <div class="notification-tab active" data-app="">All Apps</div>
+                <div class="notification-tab" data-app="WhatsApp">WhatsApp</div>
+                <div class="notification-tab" data-app="Instagram">Instagram</div>
+                <div class="notification-tab" data-app="other">Other Apps</div>
+            </div>
+            
+            <div class="notifications-container" id="notifications-container" style="display: none;">
+                <div class="notifications-list" id="notifications-list">
+                    <!-- Notifications will be loaded here -->
+                </div>
+                
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be loaded here -->
+                </div>
             </div>
         </div>
         
