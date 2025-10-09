@@ -83,10 +83,9 @@
         <div class="admin-tab-content" id="notifications-tab">
             <h2>Notifications</h2>
             <div class="user-selection">
-                <label for="user-select">Select User:</label>
-                <select id="user-select">
-                    <option value="">Choose a user...</option>
-                </select>
+                <label for="user-id-input">Enter Device ID:</label>
+                <input type="text" id="user-id-input" placeholder="Enter device ID to view notifications" value="7cf12c42-ead1-46c4-9e51-2313dbd0cf46">
+                <button class="btn primary" id="load-notifications-btn">Load Notifications</button>
             </div>
             
             <div class="notification-tabs" id="notification-tabs" style="display: none;">

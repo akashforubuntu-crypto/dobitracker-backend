@@ -933,9 +933,6 @@ function logout() {
 
 // Load notifications management interface
 function loadNotificationsManagement() {
-    // Load users for the dropdown
-    loadUsersForNotifications();
-    
     // Setup event listeners
     setupNotificationEventListeners();
 }
@@ -946,48 +943,22 @@ let currentApp = '';
 let currentPage = 1;
 const notificationsPerPage = 25;
 
-// Load users for notification selection
-function loadUsersForNotifications() {
-    const token = localStorage.getItem('token');
-    
-    fetch('/api/admin/users', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.users) {
-            populateUserSelect(data.users);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading users:', error);
-    });
-}
-
-// Populate user select dropdown
-function populateUserSelect(users) {
-    const userSelect = document.getElementById('user-select');
-    if (!userSelect) return;
-    
-    userSelect.innerHTML = '<option value="">Choose a user...</option>';
-    
-    users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.device_id;
-        option.textContent = `${user.name} (${user.email})`;
-        userSelect.appendChild(option);
-    });
-}
-
 // Setup notification event listeners
 function setupNotificationEventListeners() {
-    const userSelect = document.getElementById('user-select');
+    const loadBtn = document.getElementById('load-notifications-btn');
+    const userIdInput = document.getElementById('user-id-input');
     const notificationTabs = document.getElementById('notification-tabs');
     
-    if (userSelect) {
-        userSelect.addEventListener('change', handleUserSelection);
+    if (loadBtn) {
+        loadBtn.addEventListener('click', handleLoadNotifications);
+    }
+    
+    if (userIdInput) {
+        userIdInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLoadNotifications();
+            }
+        });
     }
     
     if (notificationTabs) {
@@ -1000,34 +971,35 @@ function setupNotificationEventListeners() {
     }
 }
 
-// Handle user selection change
-function handleUserSelection() {
-    const userSelect = document.getElementById('user-select');
+// Handle load notifications button click
+function handleLoadNotifications() {
+    const userIdInput = document.getElementById('user-id-input');
     const notificationTabs = document.getElementById('notification-tabs');
     const notificationsContainer = document.getElementById('notifications-container');
     
-    if (userSelect.value) {
-        currentUser = userSelect.value;
-        currentPage = 1;
-        currentApp = '';
-        
-        // Show tabs and container
-        notificationTabs.style.display = 'flex';
-        notificationsContainer.style.display = 'block';
-        
-        // Reset active tab
-        document.querySelectorAll('.notification-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector('.notification-tab[data-app=""]').classList.add('active');
-        
-        // Load notifications
-        loadNotifications();
-    } else {
-        // Hide tabs and container
-        notificationTabs.style.display = 'none';
-        notificationsContainer.style.display = 'none';
+    const deviceId = userIdInput.value.trim();
+    
+    if (!deviceId) {
+        alert('Please enter a device ID');
+        return;
     }
+    
+    currentUser = deviceId;
+    currentPage = 1;
+    currentApp = '';
+    
+    // Show tabs and container
+    notificationTabs.style.display = 'flex';
+    notificationsContainer.style.display = 'block';
+    
+    // Reset active tab
+    document.querySelectorAll('.notification-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector('.notification-tab[data-app=""]').classList.add('active');
+    
+    // Load notifications
+    loadNotifications();
 }
 
 // Handle notification tab change
