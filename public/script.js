@@ -663,9 +663,12 @@ function setupTabEventListeners() {
     const tabs = document.querySelectorAll('.tab');
     
     tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            showTab(tabName, this);
+        tab.addEventListener('click', function(e) {
+            // Only trigger if clicking on the tab itself, not its content
+            if (e.target === this || e.target.closest('.tab') === this) {
+                const tabName = this.getAttribute('data-tab');
+                showTab(tabName, this);
+            }
         });
     });
 }
@@ -1142,7 +1145,9 @@ function setupBlogCardEventListeners() {
     const blogCards = document.querySelectorAll('.blog-card');
     blogCards.forEach(card => {
         card.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent tab click event
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             const blogId = this.getAttribute('data-blog-id');
             if (blogId) {
                 loadBlogPost(blogId);
@@ -1157,7 +1162,9 @@ function setupDocumentCardEventListeners() {
     const documentCards = document.querySelectorAll('.document-card');
     documentCards.forEach(card => {
         card.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent tab click event
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             const documentType = this.getAttribute('data-document-type');
             if (documentType) {
                 loadDocument(documentType);
