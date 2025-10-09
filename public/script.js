@@ -666,32 +666,14 @@ function setupTabEventListeners() {
         tab.addEventListener('click', function(e) {
             const tabName = this.getAttribute('data-tab');
             
-            // For blog and documents tabs, check if we're viewing individual content
+            // For blog and documents tabs, always load content when clicked
             if (tabName === 'blog') {
-                const blogTab = document.getElementById('blog-tab');
-                // If blog tab contains a blog-post-view, don't do anything
-                if (blogTab && blogTab.querySelector('.blog-post-view')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return;
-                }
-                // Otherwise, switch to blog tab and load content
-                switchToBlogTab(this);
-                loadBlogPosts();
+                showTab('blog', this);
                 return;
             }
             
             if (tabName === 'documents') {
-                const documentsTab = document.getElementById('documents-tab');
-                // If documents tab contains a document-view, don't do anything
-                if (documentsTab && documentsTab.querySelector('.document-view')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return;
-                }
-                // Otherwise, switch to documents tab and load content
-                switchToDocumentsTab(this);
-                loadDocuments();
+                showTab('documents', this);
                 return;
             }
             
@@ -701,57 +683,6 @@ function setupTabEventListeners() {
     });
 }
 
-// Switch to blog tab without loading content
-function switchToBlogTab(clickedElement) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Remove active class from all tabs
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Show blog tab content
-    const blogTab = document.getElementById('blog-tab');
-    if (blogTab) {
-        blogTab.classList.add('active');
-    }
-    
-    // Add active class to clicked tab
-    if (clickedElement) {
-        clickedElement.classList.add('active');
-    }
-}
-
-// Switch to documents tab without loading content
-function switchToDocumentsTab(clickedElement) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Remove active class from all tabs
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Show documents tab content
-    const documentsTab = document.getElementById('documents-tab');
-    if (documentsTab) {
-        documentsTab.classList.add('active');
-    }
-    
-    // Add active class to clicked tab
-    if (clickedElement) {
-        clickedElement.classList.add('active');
-    }
-}
 
 // Show tab
 function showTab(tabName, clickedElement = null) {
@@ -998,8 +929,16 @@ function loadBlogPost(id) {
                 </div>
             `;
             
-            // Switch to blog tab without calling showTab (which would reload content)
-            switchToBlogTab(null);
+            // Just make sure the blog tab is visible (don't call showTab to avoid reloading content)
+            const blogTab = document.getElementById('blog-tab');
+            if (blogTab) {
+                blogTab.classList.add('active');
+            }
+            // Also make sure the blog tab button is active
+            const blogTabButton = document.querySelector('.tab[data-tab="blog"]');
+            if (blogTabButton) {
+                blogTabButton.classList.add('active');
+            }
         } else {
             alert('Blog post not found.');
         }
@@ -1117,8 +1056,16 @@ function loadDocument(type) {
                 </div>
             `;
             
-            // Switch to documents tab without calling showTab (which would reload content)
-            switchToDocumentsTab(null);
+            // Just make sure the documents tab is visible (don't call showTab to avoid reloading content)
+            const documentsTab = document.getElementById('documents-tab');
+            if (documentsTab) {
+                documentsTab.classList.add('active');
+            }
+            // Also make sure the documents tab button is active
+            const documentsTabButton = document.querySelector('.tab[data-tab="documents"]');
+            if (documentsTabButton) {
+                documentsTabButton.classList.add('active');
+            }
         } else {
             alert('Document not found.');
         }
